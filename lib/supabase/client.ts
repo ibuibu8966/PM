@@ -18,7 +18,7 @@ export function createClient() {
             }
             return undefined;
           },
-          set(name: string, value: string, options?: any) {
+          set(name: string, value: string, options?: { maxAge?: number }) {
             if (typeof document !== 'undefined') {
               document.cookie = `${name}=${encodeURIComponent(value)}; path=/; ${
                 options?.maxAge ? `max-age=${options.maxAge};` : ''

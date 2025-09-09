@@ -20,6 +20,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchData = async () => {
@@ -58,7 +59,7 @@ export default function DashboardPage() {
       
       // 未登録タスクに関連するLINEグループ情報を取得
       if (unregisteredResult.data && unregisteredResult.data.length > 0) {
-        const lineGroupIds = [...new Set(unregisteredResult.data.map(t => t.line_group_id))]
+        const lineGroupIds = [...new Set(unregisteredResult.data.map((t: UnregisteredTask) => t.line_group_id))]
         const { data: lineGroupsData } = await supabase
           .from('line_groups')
           .select('*')
@@ -66,7 +67,7 @@ export default function DashboardPage() {
         
         if (lineGroupsData) {
           const groupsMap: { [key: string]: LineGroup } = {}
-          lineGroupsData.forEach(g => {
+          lineGroupsData.forEach((g: LineGroup) => {
             groupsMap[g.id] = g
           })
           setLineGroups(groupsMap)

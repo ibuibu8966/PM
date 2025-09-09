@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 export default function NewProjectPage() {
@@ -31,6 +31,7 @@ export default function NewProjectPage() {
 
   useEffect(() => {
     fetchInitialData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchInitialData = async () => {

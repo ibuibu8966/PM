@@ -8,8 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 export default function NewTaskPage() {
@@ -18,8 +17,8 @@ export default function NewTaskPage() {
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [lineGroups, setLineGroups] = useState<LineGroup[]>([])
+  const [, setCustomers] = useState<Customer[]>([])
+  const [, setLineGroups] = useState<LineGroup[]>([])
   
   const projectIdFromUrl = searchParams.get('project')
   const lineGroupIdFromUrl = searchParams.get('linegroup')
@@ -34,6 +33,7 @@ export default function NewTaskPage() {
 
   useEffect(() => {
     fetchInitialData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchInitialData = async () => {
@@ -82,7 +82,7 @@ export default function NewTaskPage() {
 
     try {
       // タスク作成（ステータスは常に'not_started'）
-      const { data: taskData, error: taskError } = await supabase
+      const { error: taskError } = await supabase
         .from('tasks')
         .insert({
           title: formData.title,

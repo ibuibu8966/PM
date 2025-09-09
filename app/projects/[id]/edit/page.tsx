@@ -44,6 +44,7 @@ export default function EditProjectPage() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   const fetchData = async () => {
@@ -85,14 +86,14 @@ export default function EditProjectPage() {
         .from('project_customers')
         .select('customer_id')
         .eq('project_id', projectId)
-      setSelectedCustomers(customerRelations?.map(r => r.customer_id) || [])
+      setSelectedCustomers(customerRelations?.map((r: { customer_id: string }) => r.customer_id) || [])
 
       // 関連LINEグループ取得
       const { data: lineGroupRelations } = await supabase
         .from('project_line_groups')
         .select('line_group_id')
         .eq('project_id', projectId)
-      setSelectedLineGroups(lineGroupRelations?.map(r => r.line_group_id) || [])
+      setSelectedLineGroups(lineGroupRelations?.map((r: { line_group_id: string }) => r.line_group_id) || [])
 
     } catch (error) {
       console.error('データ取得エラー:', error)

@@ -3,11 +3,10 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Project, Customer, LineGroup } from '@/lib/types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
-import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { InlineStatusSelect } from '@/components/ui/inline-status-select'
 import { InlinePrioritySelect } from '@/components/ui/inline-priority-select'
 import { ActionButton } from '@/components/ui/action-button'
@@ -28,6 +27,7 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const updateProjectStatus = async (projectId: string, newStatus: StatusType) => {
@@ -81,7 +81,7 @@ export default function ProjectsPage() {
         const relations: typeof projectRelations = {}
         
         // すべてのプロジェクトの関連情報を並列で取得
-        const promises = projectsData.map(async (project) => {
+        const promises = projectsData.map(async (project: Project) => {
           const [customerResult, lineGroupResult] = await Promise.all([
             supabase
               .from('project_customers')
@@ -95,14 +95,14 @@ export default function ProjectsPage() {
           
           return {
             projectId: project.id,
-            customers: customerResult.data?.map(r => r.customers).filter(Boolean) || [],
-            lineGroups: lineGroupResult.data?.map(r => r.line_groups).filter(Boolean) || []
+            customers: customerResult.data?.map((r: { customers: Customer }) => r.customers).filter(Boolean) || [],
+            lineGroups: lineGroupResult.data?.map((r: { line_groups: LineGroup }) => r.line_groups).filter(Boolean) || []
           }
         })
         
         const results = await Promise.all(promises)
         
-        results.forEach(result => {
+        results.forEach((result: { projectId: string; customers: Customer[]; lineGroups: LineGroup[] }) => {
           relations[result.projectId] = {
             customers: result.customers,
             lineGroups: result.lineGroups
