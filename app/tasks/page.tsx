@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Task, Project } from '@/lib/types/database'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,9 +15,19 @@ import { ActionButton } from '@/components/ui/action-button'
 import { Plus, Search, Calendar, Filter, CheckSquare, FolderOpen, ArrowRight, Edit, ArrowUp, ChevronDown, ChevronUp } from 'lucide-react'
 import Link from 'next/link'
 
+type Assignee = {
+  id: string
+  name: string
+}
+
+type TaskWithAssignee = Task & {
+  assignee?: Assignee
+}
+
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [tasks, setTasks] = useState<TaskWithAssignee[]>([])
   const [projects, setProjects] = useState<{ [key: string]: Project }>({})
+  const [assignees, setAssignees] = useState<Assignee[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -64,10 +75,22 @@ export default function TasksPage() {
 
   const fetchData = async () => {
     try {
-      // タスク取得
+      // 担当者取得
+      const { data: assigneesData, error: assigneesError } = await supabase
+        .from('assignees')
+        .select('*')
+        .order('name')
+
+      if (assigneesError) throw assigneesError
+      setAssignees(assigneesData || [])
+
+      // タスク取得（担当者情報を含む）
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
-        .select('*')
+        .select(`
+          *,
+          assignee:assignees(*)
+        `)
         .order('priority', { ascending: false })
         .order('deadline', { ascending: true })
 
@@ -342,6 +365,11 @@ export default function TasksPage() {
                             {projects[task.project_id].name}
                           </span>
                         </Link>
+                      )}
+                      {task.assignee && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-md text-xs font-medium">
+                          {task.assignee.name}
+                        </span>
                       )}
                     </div>
                   </div>

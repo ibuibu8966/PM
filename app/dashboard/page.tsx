@@ -72,8 +72,9 @@ export default function DashboardPage() {
           setLineGroups(groupsMap)
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('データ取得エラー:', error)
+      console.error('エラー詳細:', error?.message || error)
     } finally {
       setLoading(false)
     }

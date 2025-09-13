@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Project, Customer, LineGroup } from '@/lib/types/database'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +21,7 @@ export default function NewTaskPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
   const [lineGroups, setLineGroups] = useState<LineGroup[]>([])
+  const [assignees, setAssignees] = useState<{id: string, name: string}[]>([])
   
   const projectIdFromUrl = searchParams.get('project')
   const lineGroupIdFromUrl = searchParams.get('linegroup')
@@ -29,7 +31,8 @@ export default function NewTaskPage() {
     description: '',
     projectId: projectIdFromUrl || '',
     priority: 5,
-    deadline: ''
+    deadline: '',
+    assigneeId: ''
   })
 
   useEffect(() => {
@@ -58,6 +61,13 @@ export default function NewTaskPage() {
         .select('*')
         .order('name')
       setLineGroups(lineGroupsData || [])
+
+      // 担当者一覧取得
+      const { data: assigneesData } = await supabase
+        .from('assignees')
+        .select('*')
+        .order('name')
+      setAssignees(assigneesData || [])
 
       // LINEグループIDから関連プロジェクトを取得
       if (lineGroupIdFromUrl) {
@@ -90,7 +100,8 @@ export default function NewTaskPage() {
           project_id: formData.projectId,
           priority: formData.priority,
           status: 'not_started',
-          deadline: formData.deadline || null
+          deadline: formData.deadline || null,
+          assignee_id: formData.assigneeId || null
         })
         .select()
         .single()
@@ -161,6 +172,25 @@ export default function NewTaskPage() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <Label htmlFor="assignee">担当者</Label>
+              <Select
+                value={formData.assigneeId}
+                onValueChange={(value) => setFormData({ ...formData, assigneeId: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="担当者を選択" />
+                </SelectTrigger>
+                <SelectContent>
+                  {assignees.map((assignee) => (
+                    <SelectItem key={assignee.id} value={assignee.id}>
+                      {assignee.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
