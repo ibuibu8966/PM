@@ -22,6 +22,7 @@ export default function LineGroupsPage() {
 
   useEffect(() => {
     fetchLineGroups()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchLineGroups = async () => {

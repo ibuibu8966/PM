@@ -47,6 +47,7 @@ export default function TaskDetailPage() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taskId])
 
   const fetchData = async () => {

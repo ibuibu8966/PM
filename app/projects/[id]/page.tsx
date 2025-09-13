@@ -43,6 +43,7 @@ export default function ProjectDetailPage() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   const fetchData = async () => {
@@ -74,7 +75,7 @@ export default function ProjectDetailPage() {
         .eq('project_id', projectId)
 
       if (customerRelations && customerRelations.length > 0) {
-        const customerIds = customerRelations.map(r => r.customer_id)
+        const customerIds = customerRelations.map((r: { customer_id: string }) => r.customer_id)
         
         const { data: customersData } = await supabase
           .from('customers')
@@ -92,7 +93,7 @@ export default function ProjectDetailPage() {
         .eq('project_id', projectId)
 
       if (lineGroupRelations && lineGroupRelations.length > 0) {
-        const lineGroupIds = lineGroupRelations.map(r => r.line_group_id)
+        const lineGroupIds = lineGroupRelations.map((r: { line_group_id: string }) => r.line_group_id)
         
         const { data: lineGroupsData } = await supabase
           .from('line_groups')

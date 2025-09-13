@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { 
   ArrowLeft, Users, FolderOpen, CheckSquare, MessageSquare, 
-  FileText, Plus, Calendar, ChevronDown, ChevronRight, Edit2, Trash2, X
+  FileText, Plus, Calendar, ChevronDown, ChevronRight, Trash2, X
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -38,6 +38,7 @@ export default function CustomerDetailPage() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customerId])
 
   const fetchData = async () => {
@@ -59,7 +60,7 @@ export default function CustomerDetailPage() {
         .eq('customer_id', customerId)
 
       if (projectRelations && projectRelations.length > 0) {
-        const projectIds = projectRelations.map(r => r.project_id)
+        const projectIds = projectRelations.map((r: { project_id: string }) => r.project_id)
         
         const { data: projectsData } = await supabase
           .from('projects')
@@ -85,7 +86,7 @@ export default function CustomerDetailPage() {
           .in('project_id', projectIds)
 
         if (lineGroupRelations && lineGroupRelations.length > 0) {
-          const lineGroupIds = [...new Set(lineGroupRelations.map(r => r.line_group_id))]
+          const lineGroupIds = [...new Set(lineGroupRelations.map((r: { line_group_id: string }) => r.line_group_id))]
           
           const { data: lineGroupsData } = await supabase
             .from('line_groups')
@@ -319,8 +320,7 @@ export default function CustomerDetailPage() {
                       <ActionButton
                         icon={<Trash2 className="h-4 w-4" />}
                         label=""
-                        onClick={(e) => {
-                          e.stopPropagation()
+                        onClick={() => {
                           handleDeleteSummary(summary.id)
                         }}
                         variant="ghost"

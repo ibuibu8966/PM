@@ -9,12 +9,20 @@ export async function POST(request: NextRequest) {
     console.log('=== LINE Webhook Debug ===')
     console.log('Full body:', JSON.stringify(body, null, 2))
     
-    const groupInfo: any[] = []
+    interface GroupInfo {
+      type: string
+      userId?: string
+      groupId?: string
+      roomId?: string
+      message?: string
+    }
+    
+    const groupInfo: GroupInfo[] = []
     
     // イベントからグループID/ルームIDを抽出
     for (const event of body.events || []) {
       if (event.source) {
-        const info: any = {
+        const info: GroupInfo = {
           type: event.source.type,
           userId: event.source.userId
         }

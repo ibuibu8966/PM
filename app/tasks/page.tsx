@@ -4,11 +4,10 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Task, Project } from '@/lib/types/database'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
-import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { InlineStatusSelect } from '@/components/ui/inline-status-select'
 import { InlinePrioritySelect } from '@/components/ui/inline-priority-select'
 import { ActionButton } from '@/components/ui/action-button'
@@ -37,6 +36,7 @@ export default function TasksPage() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const updateTaskStatus = async (taskId: string, newStatus: StatusType) => {
@@ -99,7 +99,7 @@ export default function TasksPage() {
 
       // プロジェクト情報取得
       if (tasksData && tasksData.length > 0) {
-        const projectIds = [...new Set(tasksData.map(t => t.project_id))]
+        const projectIds = [...new Set(tasksData.map((t: Task) => t.project_id))]
         const { data: projectsData, error: projectsError } = await supabase
           .from('projects')
           .select('*')
@@ -108,7 +108,7 @@ export default function TasksPage() {
         if (projectsError) throw projectsError
         
         const projectsMap: { [key: string]: Project } = {}
-        projectsData?.forEach(p => {
+        projectsData?.forEach((p: Project) => {
           projectsMap[p.id] = p
         })
         setProjects(projectsMap)
