@@ -18,6 +18,8 @@ import {
 } from '@/components/ui/select'
 import { SearchableMultiSelect } from '@/components/ui/searchable-multi-select'
 import { ActionButton } from '@/components/ui/action-button'
+import { LoadingSpinner, LoadingOverlay } from '@/components/ui/loading-spinner'
+import { useToast } from '@/contexts/toast-context'
 import { ArrowLeft, Save, X, FolderOpen, Users, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 
@@ -26,6 +28,7 @@ export default function EditProjectPage() {
   const router = useRouter()
   const projectId = params.id as string
   const supabase = createClient()
+  const { showToast } = useToast()
   
   const [project, setProject] = useState<Project | null>(null)
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -112,7 +115,7 @@ export default function EditProjectPage() {
     e.preventDefault()
     
     if (!formData.name.trim()) {
-      alert('プロジェクト名は必須です')
+      showToast('プロジェクト名は必須です', 'error')
       return
     }
 
@@ -164,10 +167,11 @@ export default function EditProjectPage() {
           .insert(lineGroupRelations)
       }
       
+      showToast('プロジェクトを更新しました', 'success')
       router.push(`/projects/${projectId}`)
     } catch (error) {
       console.error('更新エラー:', error)
-      alert('プロジェクトの更新に失敗しました')
+      showToast('プロジェクトの更新に失敗しました', 'error')
     } finally {
       setSaving(false)
     }
@@ -311,8 +315,17 @@ export default function EditProjectPage() {
 
             <div className="flex gap-4">
               <Button type="submit" disabled={saving} className="flex-1">
-                <Save className="h-4 w-4 mr-2" />
-                {saving ? '保存中...' : '保存'}
+                {saving ? (
+                  <>
+                    <LoadingSpinner size="sm" className="mr-2" />
+                    保存中...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    保存
+                  </>
+                )}
               </Button>
               <Link href={`/projects/${projectId}`} className="flex-1">
                 <Button type="button" variant="outline" className="w-full">

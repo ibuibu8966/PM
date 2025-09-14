@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import Navigation from "@/components/navigation";
+import { ToastProvider } from "@/contexts/toast-context";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -34,12 +35,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex flex-col min-h-screen">
-            <Navigation />
-            <main className="flex-1 pb-16 md:pb-0">
-              {children}
-            </main>
-          </div>
+          <ToastProvider>
+            <div className="flex flex-col min-h-screen">
+              <Navigation />
+              <main className="flex-1 pb-16 md:pb-0">
+                {children}
+              </main>
+            </div>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>
