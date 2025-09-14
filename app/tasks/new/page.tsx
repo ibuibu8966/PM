@@ -101,7 +101,7 @@ export default function NewTaskPage() {
       }
 
       // 担当者IDがある場合のみ追加（カラムが存在しない場合のエラーを回避）
-      if (formData.assigneeId) {
+      if (formData.assigneeId && formData.assigneeId !== 'none') {
         taskData.assignee_id = formData.assigneeId
       }
 
@@ -190,6 +190,7 @@ export default function NewTaskPage() {
                   <SelectValue placeholder="担当者を選択" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">未割当</SelectItem>
                   {assignees.map((assignee) => (
                     <SelectItem key={assignee.id} value={assignee.id}>
                       {assignee.name}

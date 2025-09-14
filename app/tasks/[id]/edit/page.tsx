@@ -65,7 +65,7 @@ export default function EditTaskPage() {
         status: taskData.status,
         priority: taskData.priority,
         deadline: taskData.deadline ? taskData.deadline.split('T')[0] : '',
-        assignee_id: taskData.assignee_id || ''
+        assignee_id: taskData.assignee_id || 'none'
       })
 
       // プロジェクト一覧取得
@@ -118,7 +118,7 @@ export default function EditTaskPage() {
           status: formData.status,
           priority: formData.priority,
           deadline: formData.deadline || null,
-          assignee_id: formData.assignee_id || null
+          assignee_id: formData.assignee_id === 'none' || !formData.assignee_id ? null : formData.assignee_id
         })
         .eq('id', taskId)
 
@@ -269,7 +269,7 @@ export default function EditTaskPage() {
                   <SelectValue placeholder="担当者を選択" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">未割当</SelectItem>
+                  <SelectItem value="none">未割当</SelectItem>
                   {assignees.map((assignee) => (
                     <SelectItem key={assignee.id} value={assignee.id}>
                       {assignee.name}
