@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Task, Project } from '@/lib/types/database'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,7 +25,6 @@ type TaskWithAssignee = Task & {
 export default function TasksPage() {
   const [tasks, setTasks] = useState<TaskWithAssignee[]>([])
   const [projects, setProjects] = useState<{ [key: string]: Project }>({})
-  const [assignees, setAssignees] = useState<Assignee[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -36,7 +34,6 @@ export default function TasksPage() {
 
   useEffect(() => {
     fetchData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const updateTaskStatus = async (taskId: string, newStatus: StatusType) => {
@@ -81,11 +78,11 @@ export default function TasksPage() {
         .select('*')
         .order('name')
 
-      if (assigneesError) {
-        console.log('担当者テーブルが存在しない可能性があります:', assigneesError)
-        setAssignees([])
+      let assigneesList: Assignee[] = []
+      if (!assigneesError && assigneesData) {
+        assigneesList = assigneesData
       } else {
-        setAssignees(assigneesData || [])
+        console.log('担当者テーブルが存在しない可能性があります:', assigneesError)
       }
 
       // タスク取得（担当者情報は別途取得）
@@ -98,8 +95,8 @@ export default function TasksPage() {
       if (tasksError) throw tasksError
 
       // 担当者情報をタスクに追加（担当者データがある場合）
-      const tasksWithAssignees = tasksData?.map(task => {
-        const assignee = assigneesData?.find(a => a.id === task.assignee_id)
+      const tasksWithAssignees = tasksData?.map((task: Task) => {
+        const assignee = assigneesList?.find((a: Assignee) => a.id === task.assignee_id)
         return { ...task, assignee }
       }) || []
 
@@ -121,9 +118,9 @@ export default function TasksPage() {
         })
         setProjects(projectsMap)
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('データ取得エラー:', error)
-      console.error('エラー詳細:', error?.message || error)
+      console.error('エラー詳細:', (error as Error)?.message || error)
     } finally {
       setLoading(false)
     }

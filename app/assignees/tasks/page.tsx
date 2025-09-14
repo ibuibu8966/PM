@@ -49,6 +49,7 @@ export default function AssigneeTasksPage() {
 
   useEffect(() => {
     fetchAssigneeTasks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchAssigneeTasks = async () => {
@@ -78,7 +79,7 @@ export default function AssigneeTasksPage() {
       const unassigned: Task[] = []
 
       // 初期化
-      assignees?.forEach(assignee => {
+      assignees?.forEach((assignee: Assignee) => {
         assigneeMap[assignee.id] = {
           ...assignee,
           tasks: [],
@@ -95,7 +96,7 @@ export default function AssigneeTasksPage() {
 
       // タスクを振り分け
       const today = new Date()
-      tasks?.forEach(task => {
+      tasks?.forEach((task: Task) => {
         if (task.assignee_id && assigneeMap[task.assignee_id]) {
           const assignee = assigneeMap[task.assignee_id]
           assignee.tasks.push(task)

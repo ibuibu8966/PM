@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Project, Task, UnregisteredTask, LineGroup } from '@/lib/types/database'
+import { Project, Task, UnregisteredTask } from '@/lib/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
@@ -26,7 +26,6 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [todayTasks, setTodayTasks] = useState<Task[]>([])
   const [unregisteredTasks, setUnregisteredTasks] = useState<UnregisteredTask[]>([])
-  const [lineGroups, setLineGroups] = useState<{ [key: string]: LineGroup }>({})
   const [assigneeStats, setAssigneeStats] = useState<AssigneeStats[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
@@ -103,10 +102,10 @@ export default function DashboardPage() {
         const allTasks = allTasksResult.data || []
         const now = new Date()
 
-        assignees.forEach(assignee => {
-          const assigneeTasks = allTasks.filter((t: any) => t.assignee_id === assignee.id)
-          const inProgress = assigneeTasks.filter((t: any) => t.status === 'in_progress').length
-          const overdue = assigneeTasks.filter((t: any) =>
+        assignees.forEach((assignee: Assignee) => {
+          const assigneeTasks = allTasks.filter((t: Task) => t.assignee_id === assignee.id)
+          const inProgress = assigneeTasks.filter((t: Task) => t.status === 'in_progress').length
+          const overdue = assigneeTasks.filter((t: Task) =>
             t.deadline && new Date(t.deadline) < now && t.status !== 'completed'
           ).length
 
@@ -125,9 +124,9 @@ export default function DashboardPage() {
       
       // 未登録タスクは現在のスキーマではLINEグループ名のみを持つため、
       // LINEグループ情報の取得はスキップ
-    } catch (error: any) {
+    } catch (error) {
       console.error('データ取得エラー:', error)
-      console.error('エラー詳細:', error?.message || error)
+      console.error('エラー詳細:', (error as Error)?.message || error)
     } finally {
       setLoading(false)
     }

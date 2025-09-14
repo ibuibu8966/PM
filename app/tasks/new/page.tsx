@@ -36,8 +36,7 @@ export default function NewTaskPage() {
 
   useEffect(() => {
     fetchInitialData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [lineGroupIdFromUrl])
 
   const fetchInitialData = async () => {
     try {
@@ -92,7 +91,7 @@ export default function NewTaskPage() {
 
     try {
       // タスク作成データの準備
-      const taskData: any = {
+      const taskData: Record<string, unknown> = {
         title: formData.title,
         description: formData.description,
         project_id: formData.projectId,
@@ -116,10 +115,10 @@ export default function NewTaskPage() {
 
 
       router.push('/tasks')
-    } catch (error: any) {
+    } catch (error) {
       console.error('タスク作成エラー:', error)
-      console.error('エラー詳細:', error?.message || error)
-      alert(`タスクの作成に失敗しました: ${error?.message || 'Unknown error'}`)
+      console.error('エラー詳細:', (error as Error)?.message || error)
+      alert(`タスクの作成に失敗しました: ${(error as Error)?.message || 'Unknown error'}`)
     } finally {
       setLoading(false)
     }

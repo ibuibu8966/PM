@@ -31,6 +31,7 @@ export type Task = {
   priority: number
   status: 'not_started' | 'waiting_confirmation' | 'in_progress' | 'completed'
   deadline?: string
+  assignee_id?: string
   created_at: string
   updated_at: string
 }
@@ -87,12 +88,9 @@ export type ClaudeSummary = {
 
 export type UnregisteredTask = {
   id: string
-  line_group_id: string
-  title: string
-  description?: string
-  line_message_id?: string
-  line_user_id?: string
-  received_at: string
-  processed: boolean
+  line_group_name: string
+  content: string
+  sender_name?: string
   created_at: string
+  updated_at: string
 }
