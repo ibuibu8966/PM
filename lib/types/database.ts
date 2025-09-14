@@ -76,7 +76,7 @@ export type ProjectLineGroup = {
   created_at: string
 }
 
-export type ClaudeSummary = {
+export type PlaudSummary = {
   id: string
   customer_id: string
   title: string

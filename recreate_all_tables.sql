@@ -2,7 +2,7 @@
 -- Execute this in Supabase SQL Editor
 
 -- Drop existing tables if they exist
-DROP TABLE IF EXISTS claude_summaries CASCADE;
+DROP TABLE IF EXISTS plaud_summaries CASCADE;
 DROP TABLE IF EXISTS memos CASCADE;
 DROP TABLE IF EXISTS proposals CASCADE;
 DROP TABLE IF EXISTS tasks CASCADE;
@@ -114,8 +114,8 @@ CREATE TABLE memos (
     )
 );
 
--- 9. Claude summaries table
-CREATE TABLE claude_summaries (
+-- 9. Plaud summaries table
+CREATE TABLE plaud_summaries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
@@ -149,8 +149,8 @@ CREATE INDEX idx_project_customers_project_id ON project_customers(project_id);
 CREATE INDEX idx_project_customers_customer_id ON project_customers(customer_id);
 CREATE INDEX idx_project_line_groups_project_id ON project_line_groups(project_id);
 CREATE INDEX idx_project_line_groups_line_group_id ON project_line_groups(line_group_id);
-CREATE INDEX idx_claude_summaries_customer_id ON claude_summaries(customer_id);
-CREATE INDEX idx_claude_summaries_date ON claude_summaries(summary_date);
+CREATE INDEX idx_plaud_summaries_customer_id ON plaud_summaries(customer_id);
+CREATE INDEX idx_plaud_summaries_date ON plaud_summaries(summary_date);
 
 -- Function to auto-update updated_at column
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -180,7 +180,7 @@ CREATE TRIGGER update_proposals_updated_at BEFORE UPDATE ON proposals
 CREATE TRIGGER update_memos_updated_at BEFORE UPDATE ON memos
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_claude_summaries_updated_at BEFORE UPDATE ON claude_summaries
+CREATE TRIGGER update_plaud_summaries_updated_at BEFORE UPDATE ON plaud_summaries
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_unregistered_tasks_updated_at BEFORE UPDATE ON unregistered_tasks

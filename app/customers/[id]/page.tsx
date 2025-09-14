@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Customer, Project, Task, LineGroup, ClaudeSummary } from '@/lib/types/database'
+import { Customer, Project, Task, LineGroup, PlaudSummary } from '@/lib/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
@@ -25,7 +25,7 @@ export default function CustomerDetailPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [lineGroups, setLineGroups] = useState<LineGroup[]>([])
-  const [summaries, setSummaries] = useState<ClaudeSummary[]>([])
+  const [summaries, setSummaries] = useState<PlaudSummary[]>([])
   const [loading, setLoading] = useState(true)
   
   const [showSummaryForm, setShowSummaryForm] = useState(false)
@@ -98,9 +98,9 @@ export default function CustomerDetailPage() {
         }
       }
 
-      // Claude要約取得
+      // Plaud要約取得
       const { data: summariesData } = await supabase
-        .from('claude_summaries')
+        .from('plaud_summaries')
         .select('*')
         .eq('customer_id', customerId)
         .order('summary_date', { ascending: false })
@@ -119,7 +119,7 @@ export default function CustomerDetailPage() {
 
     try {
       const { data, error } = await supabase
-        .from('claude_summaries')
+        .from('plaud_summaries')
         .insert({
           customer_id: customerId,
           title: newSummary.title,
@@ -149,7 +149,7 @@ export default function CustomerDetailPage() {
 
     try {
       const { error } = await supabase
-        .from('claude_summaries')
+        .from('plaud_summaries')
         .delete()
         .eq('id', summaryId)
 
@@ -215,13 +215,13 @@ export default function CustomerDetailPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Claude要約セクション */}
+        {/* Plaud要約セクション */}
         <Card className="lg:col-span-2 shadow-lg">
           <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-purple-600" />
-                Claude要約
+                Plaud要約
               </CardTitle>
               <ActionButton
                 icon={<Plus className="h-4 w-4" />}
@@ -263,7 +263,7 @@ export default function CustomerDetailPage() {
                       className="w-full p-3 border rounded-md min-h-[200px]"
                       value={newSummary.content}
                       onChange={(e) => setNewSummary({ ...newSummary, content: e.target.value })}
-                      placeholder="Claudeの要約を貼り付けてください"
+                      placeholder="Plaudの要約を貼り付けてください"
                     />
                   </div>
                   <div className="flex gap-2">
