@@ -7,7 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { ActionButton } from '@/components/ui/action-button'
-import { Plus, Calendar, AlertCircle, FolderOpen, CheckSquare, Users, MessageSquare, ArrowRight, Sparkles, Clock, TrendingUp, Target, Inbox, User } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Plus, Calendar, AlertCircle, FolderOpen, CheckSquare, Users, MessageSquare, ArrowRight, Sparkles, Clock, TrendingUp, Target, Inbox, User, ChevronDown, ChevronUp } from 'lucide-react'
 import Link from 'next/link'
 
 type Assignee = {
@@ -28,6 +32,16 @@ export default function DashboardPage() {
   const [unregisteredTasks, setUnregisteredTasks] = useState<UnregisteredTask[]>([])
   const [assigneeStats, setAssigneeStats] = useState<AssigneeStats[]>([])
   const [loading, setLoading] = useState(true)
+  const [expandedTasks, setExpandedTasks] = useState<{ [key: string]: boolean }>({})
+  const [taskForms, setTaskForms] = useState<{
+    [key: string]: {
+      title: string
+      description: string
+      projectId: string
+      priority: number
+      deadline: string
+    }
+  }>({})
   const supabase = createClient()
 
   useEffect(() => {
@@ -95,6 +109,20 @@ export default function DashboardPage() {
       setTodayTasks(tasksResult.data || [])
       setUnregisteredTasks(unregisteredResult.data || [])
 
+      // 未登録タスクの初期フォームデータを設定
+      const initialForms: typeof taskForms = {}
+      unregisteredResult.data?.forEach((task: UnregisteredTask) => {
+        const lines = task.content.split('\n')
+        initialForms[task.id] = {
+          title: lines[0] || '',
+          description: lines.slice(1).join('\n') || '',
+          projectId: '',
+          priority: 5,
+          deadline: ''
+        }
+      })
+      setTaskForms(initialForms)
+
       // 担当者別統計を計算（担当者データがある場合のみ）
       if (!assigneesResult.error && assigneesResult.data) {
         const stats: AssigneeStats[] = []
@@ -129,6 +157,76 @@ export default function DashboardPage() {
       console.error('エラー詳細:', (error as Error)?.message || error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const toggleTask = (taskId: string) => {
+    setExpandedTasks(prev => ({
+      ...prev,
+      [taskId]: !prev[taskId]
+    }))
+  }
+
+  const updateTaskForm = (taskId: string, field: string, value: string | number) => {
+    setTaskForms(prev => ({
+      ...prev,
+      [taskId]: {
+        ...prev[taskId],
+        [field]: value
+      }
+    }))
+  }
+
+  const assignTask = async (taskId: string) => {
+    const form = taskForms[taskId]
+
+    if (!form.projectId) {
+      alert('プロジェクトを選択してください')
+      return
+    }
+
+    if (!form.title) {
+      alert('タスク名を入力してください')
+      return
+    }
+
+    try {
+      // タスクを作成
+      const { error: taskError } = await supabase
+        .from('tasks')
+        .insert({
+          title: form.title,
+          description: form.description || null,
+          project_id: form.projectId,
+          priority: form.priority,
+          deadline: form.deadline || null,
+          status: 'not_started'
+        })
+
+      if (taskError) throw taskError
+
+      // 未登録タスクを削除
+      const { error: deleteError } = await supabase
+        .from('unregistered_tasks')
+        .delete()
+        .eq('id', taskId)
+
+      if (deleteError) throw deleteError
+
+      // データを再取得
+      await fetchData()
+
+      // 展開状態をリセット
+      setExpandedTasks(prev => {
+        const newExpanded = { ...prev }
+        delete newExpanded[taskId]
+        return newExpanded
+      })
+
+      alert('タスクを登録しました')
+    } catch (error) {
+      console.error('タスク登録エラー:', error)
+      alert('タスクの登録に失敗しました')
     }
   }
 
@@ -421,34 +519,47 @@ export default function DashboardPage() {
           <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
             <div className="space-y-3">
               {unregisteredTasks.slice(0, 10).map((task) => (
-                <div key={task.id} className="group p-3 md:p-4 border border-orange-200 rounded-lg md:rounded-xl bg-orange-50/50 dark:bg-orange-950/20">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm md:text-base mb-1">
-                        {task.content}
-                      </h4>
-                      {task.sender_name && (
-                        <p className="text-xs md:text-sm text-muted-foreground">
-                          送信者: {task.sender_name}
-                        </p>
-                      )}
-                    </div>
-                    <Link href={`/tasks/new?unregistered=${task.id}`}>
-                      <ActionButton
-                        icon={<Plus className="h-3 w-3" />}
-                        label="登録"
+                <div key={task.id} className="border border-orange-200 rounded-lg md:rounded-xl bg-orange-50/50 dark:bg-orange-950/20 overflow-hidden">
+                  <div
+                    className="group p-3 md:p-4 cursor-pointer hover:bg-orange-100/50 transition-colors"
+                    onClick={() => toggleTask(task.id)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          {expandedTasks[task.id] ? (
+                            <ChevronUp className="h-4 w-4 text-orange-600" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-orange-600" />
+                          )}
+                          <h4 className="font-semibold text-sm md:text-base">
+                            {task.content.split('\n')[0]}
+                          </h4>
+                        </div>
+                        {task.sender_name && (
+                          <p className="text-xs md:text-sm text-muted-foreground ml-6">
+                            送信者: {task.sender_name}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleTask(task.id)
+                        }}
                         size="sm"
-                        tooltip="タスクとして登録"
                         variant="outline"
-                      />
-                    </Link>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <MessageSquare className="h-3 w-3" />
-                      {task.line_group_name}
-                    </span>
-                    <span className="flex items-center gap-1">
+                        className="text-xs"
+                      >
+                        {expandedTasks[task.id] ? '閉じる' : '登録'}
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground ml-6 mt-2">
+                      <span className="flex items-center gap-1">
+                        <MessageSquare className="h-3 w-3" />
+                        {task.line_group_name}
+                      </span>
+                      <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {new Date(task.created_at).toLocaleString('ja-JP', {
                         month: 'numeric',
@@ -459,6 +570,90 @@ export default function DashboardPage() {
                     </span>
                   </div>
                 </div>
+
+                {/* 展開時のフォーム */}
+                {expandedTasks[task.id] && taskForms[task.id] && (
+                  <div className="p-4 border-t border-orange-200 bg-white dark:bg-gray-900">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor={`title-${task.id}`} className="text-sm">タスク名 *</Label>
+                        <Input
+                          id={`title-${task.id}`}
+                          value={taskForms[task.id].title}
+                          onChange={(e) => updateTaskForm(task.id, 'title', e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor={`description-${task.id}`} className="text-sm">説明</Label>
+                        <textarea
+                          id={`description-${task.id}`}
+                          className="w-full p-2 border rounded-md min-h-[80px] mt-1"
+                          value={taskForms[task.id].description}
+                          onChange={(e) => updateTaskForm(task.id, 'description', e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor={`project-${task.id}`} className="text-sm">プロジェクト *</Label>
+                        <Select
+                          value={taskForms[task.id].projectId}
+                          onValueChange={(value) => updateTaskForm(task.id, 'projectId', value)}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="プロジェクトを選択" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {projects.map((project) => (
+                              <SelectItem key={project.id} value={project.id}>
+                                {project.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor={`priority-${task.id}`} className="text-sm">優先度 (0-10)</Label>
+                          <Input
+                            id={`priority-${task.id}`}
+                            type="number"
+                            min="0"
+                            max="10"
+                            value={taskForms[task.id].priority}
+                            onChange={(e) => updateTaskForm(task.id, 'priority', parseInt(e.target.value))}
+                            className="mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor={`deadline-${task.id}`} className="text-sm">締切日</Label>
+                          <Input
+                            id={`deadline-${task.id}`}
+                            type="date"
+                            value={taskForms[task.id].deadline}
+                            onChange={(e) => updateTaskForm(task.id, 'deadline', e.target.value)}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button
+                          onClick={() => assignTask(task.id)}
+                          disabled={!taskForms[task.id].projectId || !taskForms[task.id].title}
+                          size="sm"
+                        >
+                          <CheckSquare className="h-4 w-4 mr-2" />
+                          タスクとして登録
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
               ))}
             </div>
           </CardContent>

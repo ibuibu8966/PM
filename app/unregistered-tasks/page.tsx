@@ -129,14 +129,14 @@ export default function UnregisteredTasksPage() {
 
       if (deleteError) throw deleteError
 
-      // 一覧を更新
-      setUnregisteredTasks(prev => prev.filter(t => t.id !== taskId))
+      // データを再取得して一覧を更新
+      await fetchData()
 
-      // フォームデータを削除
-      setTaskForms(prev => {
-        const newForms = { ...prev }
-        delete newForms[taskId]
-        return newForms
+      // 展開状態をリセット
+      setExpandedTasks(prev => {
+        const newExpanded = { ...prev }
+        delete newExpanded[taskId]
+        return newExpanded
       })
 
       alert('タスクを登録しました')
@@ -157,13 +157,14 @@ export default function UnregisteredTasksPage() {
 
       if (error) throw error
 
-      setUnregisteredTasks(prev => prev.filter(t => t.id !== taskId))
+      // データを再取得して一覧を更新
+      await fetchData()
 
-      // フォームデータも削除
-      setTaskForms(prev => {
-        const newForms = { ...prev }
-        delete newForms[taskId]
-        return newForms
+      // 展開状態をリセット
+      setExpandedTasks(prev => {
+        const newExpanded = { ...prev }
+        delete newExpanded[taskId]
+        return newExpanded
       })
     } catch (error) {
       console.error('削除エラー:', error)
