@@ -94,3 +94,12 @@ export type UnregisteredTask = {
   created_at: string
   updated_at: string
 }
+
+export type Memo = {
+  id: string
+  content: string
+  project_id?: string
+  task_id?: string
+  created_at: string
+  updated_at: string
+}

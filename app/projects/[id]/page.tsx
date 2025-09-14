@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Project, Task, Customer, LineGroup, Proposal } from '@/lib/types/database'
+import { Project, Task, Customer, LineGroup, Proposal, Memo } from '@/lib/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,10 +14,10 @@ import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { InlineStatusSelect } from '@/components/ui/inline-status-select'
 import { InlinePrioritySelect } from '@/components/ui/inline-priority-select'
 import { ActionButton } from '@/components/ui/action-button'
-import { 
-  ArrowLeft, FolderOpen, CheckSquare, Users, MessageSquare, 
+import {
+  ArrowLeft, FolderOpen, CheckSquare, Users, MessageSquare,
   Lightbulb, Calendar, Plus, ChevronDown, ChevronRight,
-  Edit2, Trash2, Save, X
+  Edit2, Trash2, Save, X, StickyNote
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -31,6 +31,7 @@ export default function ProjectDetailPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [lineGroups, setLineGroups] = useState<LineGroup[]>([])
   const [proposals, setProposals] = useState<Proposal[]>([])
+  const [memos, setMemos] = useState<Memo[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedProposals, setExpandedProposals] = useState<Set<string>>(new Set())
   const [isAddingProposal, setIsAddingProposal] = useState(false)
@@ -40,6 +41,9 @@ export default function ProjectDetailPage() {
     content: '',
     reason: ''
   })
+  const [isAddingMemo, setIsAddingMemo] = useState(false)
+  const [editingMemoId, setEditingMemoId] = useState<string | null>(null)
+  const [memoContent, setMemoContent] = useState('')
 
   useEffect(() => {
     fetchData()
@@ -112,6 +116,15 @@ export default function ProjectDetailPage() {
         .order('proposal_order')
 
       setProposals(proposalsData || [])
+
+      // プロジェクトのメモ取得
+      const { data: memosData } = await supabase
+        .from('memos')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false })
+
+      setMemos(memosData || [])
 
     } catch (error) {
       console.error('データ取得エラー:', error)
@@ -249,6 +262,86 @@ export default function ProjectDetailPage() {
       content: proposal.content,
       reason: proposal.reason || ''
     })
+  }
+
+  // メモ関連の関数
+  const handleAddMemo = async () => {
+    if (!memoContent.trim()) {
+      alert('メモの内容を入力してください')
+      return
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('memos')
+        .insert({
+          project_id: projectId,
+          content: memoContent.trim()
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setMemos([data, ...memos])
+      setMemoContent('')
+      setIsAddingMemo(false)
+    } catch (error) {
+      console.error('メモ追加エラー:', error)
+      alert('メモの追加に失敗しました')
+    }
+  }
+
+  const handleUpdateMemo = async (memoId: string) => {
+    if (!memoContent.trim()) {
+      alert('メモの内容を入力してください')
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('memos')
+        .update({
+          content: memoContent.trim()
+        })
+        .eq('id', memoId)
+
+      if (error) throw error
+
+      setMemos(memos.map(m =>
+        m.id === memoId
+          ? { ...m, content: memoContent, updated_at: new Date().toISOString() }
+          : m
+      ))
+      setEditingMemoId(null)
+      setMemoContent('')
+    } catch (error) {
+      console.error('メモ更新エラー:', error)
+      alert('メモの更新に失敗しました')
+    }
+  }
+
+  const handleDeleteMemo = async (memoId: string) => {
+    if (!confirm('このメモを削除してもよろしいですか？')) return
+
+    try {
+      const { error } = await supabase
+        .from('memos')
+        .delete()
+        .eq('id', memoId)
+
+      if (error) throw error
+
+      setMemos(memos.filter(m => m.id !== memoId))
+    } catch (error) {
+      console.error('メモ削除エラー:', error)
+      alert('メモの削除に失敗しました')
+    }
+  }
+
+  const startEditMemo = (memo: Memo) => {
+    setEditingMemoId(memo.id)
+    setMemoContent(memo.content)
   }
 
   if (loading) {
@@ -507,6 +600,122 @@ export default function ProjectDetailPage() {
                           )}
                         </div>
                       )}
+                    </>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* メモセクション */}
+      <Card className="mb-4 md:mb-6 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950 dark:to-yellow-950">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <StickyNote className="h-5 w-5 text-amber-600" />
+              メモ ({memos.length})
+            </CardTitle>
+            <ActionButton
+              icon={<Plus className="h-4 w-4" />}
+              label="メモを追加"
+              variant="default"
+              size="sm"
+              onClick={() => setIsAddingMemo(true)}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {/* 新規メモ追加フォーム */}
+          {isAddingMemo && (
+            <div className="mb-4 p-4 border-2 border-primary rounded-lg">
+              <Textarea
+                value={memoContent}
+                onChange={(e) => setMemoContent(e.target.value)}
+                placeholder="メモを入力..."
+                className="min-h-[100px] mb-3"
+              />
+              <div className="flex gap-2">
+                <Button onClick={handleAddMemo} size="sm" className="flex-1">
+                  <Save className="h-4 w-4 mr-1" />
+                  保存
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsAddingMemo(false)
+                    setMemoContent('')
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  キャンセル
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* メモ一覧 */}
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {memos.length === 0 && !isAddingMemo ? (
+              <p className="text-center text-muted-foreground py-8">
+                メモがありません
+              </p>
+            ) : (
+              memos.map((memo) => (
+                <div key={memo.id} className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
+                  {editingMemoId === memo.id ? (
+                    <>
+                      <Textarea
+                        value={memoContent}
+                        onChange={(e) => setMemoContent(e.target.value)}
+                        className="min-h-[100px] mb-3"
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={() => handleUpdateMemo(memo.id)} size="sm" className="flex-1">
+                          <Save className="h-4 w-4 mr-1" />
+                          更新
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setEditingMemoId(null)
+                            setMemoContent('')
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          キャンセル
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-start mb-2">
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(memo.created_at).toLocaleString('ja-JP')}
+                        </p>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEditMemo(memo)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteMemo(memo.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="whitespace-pre-wrap">{memo.content}</p>
                     </>
                   )}
                 </div>
