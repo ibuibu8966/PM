@@ -93,6 +93,25 @@ export default function UnregisteredTasksPage() {
   }
 
   const toggleTask = (taskId: string) => {
+    // タスクフォームがまだ初期化されていない場合は初期化
+    if (!taskForms[taskId]) {
+      const task = unregisteredTasks.find(t => t.id === taskId)
+      if (task) {
+        const lines = task.content.split('\n')
+        setTaskForms(prev => ({
+          ...prev,
+          [taskId]: {
+            title: lines[0] || '',
+            description: lines.slice(1).join('\n') || '',
+            projectId: '',
+            priority: 5,
+            deadline: '',
+            assigneeId: ''
+          }
+        }))
+      }
+    }
+
     setExpandedTasks(prev => ({
       ...prev,
       [taskId]: !prev[taskId]
@@ -133,7 +152,7 @@ export default function UnregisteredTasksPage() {
           priority: form.priority,
           deadline: form.deadline || null,
           status: 'not_started',
-          assignee_id: form.assigneeId || null
+          assignee_id: form.assigneeId === 'none' || !form.assigneeId ? null : form.assigneeId
         })
 
       if (taskError) throw taskError
@@ -348,7 +367,7 @@ export default function UnregisteredTasksPage() {
                           <SelectValue placeholder="担当者を選択" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">未割当</SelectItem>
+                          <SelectItem value="none">未割当</SelectItem>
                           {assignees.map((assignee) => (
                             <SelectItem key={assignee.id} value={assignee.id}>
                               {assignee.name}

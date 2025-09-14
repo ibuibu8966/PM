@@ -171,6 +171,25 @@ export default function DashboardPage() {
   }
 
   const toggleTask = (taskId: string) => {
+    // タスクフォームがまだ初期化されていない場合は初期化
+    if (!taskForms[taskId]) {
+      const task = unregisteredTasks.find(t => t.id === taskId)
+      if (task) {
+        const lines = task.content.split('\n')
+        setTaskForms(prev => ({
+          ...prev,
+          [taskId]: {
+            title: lines[0] || '',
+            description: lines.slice(1).join('\n') || '',
+            projectId: '',
+            priority: 5,
+            deadline: '',
+            assigneeId: ''
+          }
+        }))
+      }
+    }
+
     setExpandedTasks(prev => ({
       ...prev,
       [taskId]: !prev[taskId]
