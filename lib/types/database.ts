@@ -90,3 +90,53 @@ export type Memo = {
   created_at: string
   updated_at: string
 }
+
+export type Attachment = {
+  id: string
+  filename: string
+  file_url: string
+  file_size: number
+  mime_type: string
+  project_id?: string
+  task_id?: string
+  uploaded_by?: string
+  created_at: string
+}
+
+export type Comment = {
+  id: string
+  content: string
+  project_id?: string
+  task_id?: string
+  author_name: string
+  created_at: string
+  updated_at: string
+}
+
+export type Notification = {
+  id: string
+  title: string
+  message: string
+  type: 'task_deadline' | 'task_overdue' | 'task_assigned' | 'comment_added' | 'status_changed' | 'priority_changed' | 'general'
+  is_read: boolean
+  related_project_id?: string
+  related_task_id?: string
+  recipient?: string
+  created_at: string
+  read_at?: string
+}
+
+export type NotificationSettings = {
+  id: string
+  user_id?: string
+  task_deadline_enabled: boolean
+  task_overdue_enabled: boolean
+  task_assigned_enabled: boolean
+  comment_added_enabled: boolean
+  status_changed_enabled: boolean
+  priority_changed_enabled: boolean
+  email_notifications: boolean
+  push_notifications: boolean
+  created_at: string
+  updated_at: string
+}

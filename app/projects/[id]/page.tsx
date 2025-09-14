@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Project, Task, Customer, LineGroup, Proposal, Memo } from '@/lib/types/database'
+import { Project, Task, Customer, LineGroup, Proposal, Memo, Attachment } from '@/lib/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,9 +17,11 @@ import { ActionButton } from '@/components/ui/action-button'
 import {
   ArrowLeft, FolderOpen, CheckSquare, Users, MessageSquare,
   Lightbulb, Calendar, Plus, ChevronDown, ChevronRight,
-  Edit2, Trash2, Save, X, StickyNote
+  Edit2, Trash2, Save, X, StickyNote, Paperclip, MessageCircle
 } from 'lucide-react'
 import Link from 'next/link'
+import { FileUpload } from '@/components/ui/file-upload'
+import { Comments } from '@/components/ui/comments'
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -44,6 +46,7 @@ export default function ProjectDetailPage() {
   const [isAddingMemo, setIsAddingMemo] = useState(false)
   const [editingMemoId, setEditingMemoId] = useState<string | null>(null)
   const [memoContent, setMemoContent] = useState('')
+  const [attachments, setAttachments] = useState<Attachment[]>([])
 
   useEffect(() => {
     fetchData()
@@ -125,6 +128,15 @@ export default function ProjectDetailPage() {
         .order('created_at', { ascending: false })
 
       setMemos(memosData || [])
+
+      // 添付ファイル取得
+      const { data: attachmentsData } = await supabase
+        .from('attachments')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false })
+
+      setAttachments(attachmentsData || [])
 
     } catch (error) {
       console.error('データ取得エラー:', error)
@@ -832,6 +844,36 @@ export default function ProjectDetailPage() {
           </Card>
         </div>
       </div>
+
+      {/* ファイル添付セクション */}
+      <Card className="mb-6 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950">
+          <CardTitle className="flex items-center gap-2">
+            <Paperclip className="h-5 w-5 text-indigo-600" />
+            添付ファイル
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <FileUpload
+            projectId={projectId}
+            attachments={attachments}
+            onAttachmentsChange={setAttachments}
+          />
+        </CardContent>
+      </Card>
+
+      {/* コメントセクション */}
+      <Card className="mb-6 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950">
+          <CardTitle className="flex items-center gap-2">
+            <MessageCircle className="h-5 w-5 text-teal-600" />
+            コメント
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <Comments projectId={projectId} />
+        </CardContent>
+      </Card>
     </div>
   )
 }

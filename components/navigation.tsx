@@ -11,9 +11,13 @@ import {
   MessageSquare,
   Menu,
   X,
-  UserCheck
+  UserCheck,
+  BarChart3,
+  Bell
 } from 'lucide-react'
 import { useState } from 'react'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { NotificationBell } from '@/components/ui/notification-bell'
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -26,6 +30,7 @@ export default function Navigation() {
     { href: '/customers', label: '顧客', icon: Users },
     { href: '/line-groups', label: 'LINEグループ', icon: MessageSquare },
     { href: '/assignees', label: '担当者別', icon: UserCheck },
+    { href: '/reports', label: 'レポート', icon: BarChart3 },
   ]
 
   const isActive = (href: string) => {
@@ -58,6 +63,10 @@ export default function Navigation() {
             })}
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <ThemeToggle />
+        </div>
       </nav>
 
       {/* モバイルナビゲーション */}
@@ -66,13 +75,17 @@ export default function Navigation() {
           <Link href="/dashboard" className="text-lg font-bold">
             PM Support
           </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
 
         {isOpen && (
