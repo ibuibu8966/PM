@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   Home,
@@ -11,13 +11,22 @@ import {
   MessageSquare,
   Menu,
   X,
-  UserCheck
+  UserCheck,
+  LogOut
 } from 'lucide-react'
 import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function Navigation() {
   const pathname = usePathname()
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/auth/login')
+  }
 
   const navItems = [
     { href: '/dashboard', label: 'ダッシュボード', icon: Home },
@@ -58,6 +67,15 @@ export default function Navigation() {
             })}
           </div>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleLogout}
+          className="gap-2"
+        >
+          <LogOut className="h-4 w-4" />
+          ログアウト
+        </Button>
       </nav>
 
       {/* モバイルナビゲーション */}
@@ -94,6 +112,15 @@ export default function Navigation() {
                   </Link>
                 )
               })}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 mt-2 border-t pt-2"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4" />
+                ログアウト
+              </Button>
             </div>
           </div>
         )}
