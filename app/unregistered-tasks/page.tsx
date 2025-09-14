@@ -19,6 +19,7 @@ type ExpandedTask = {
 export default function UnregisteredTasksPage() {
   const [unregisteredTasks, setUnregisteredTasks] = useState<UnregisteredTask[]>([])
   const [projects, setProjects] = useState<Project[]>([])
+  const [assignees, setAssignees] = useState<{id: string, name: string}[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedTasks, setExpandedTasks] = useState<ExpandedTask>({})
   const supabase = createClient()
@@ -31,6 +32,7 @@ export default function UnregisteredTasksPage() {
       projectId: string
       priority: number
       deadline: string
+      assigneeId: string
     }
   }>({})
 
@@ -56,6 +58,14 @@ export default function UnregisteredTasksPage() {
 
       setProjects(projectsData || [])
 
+      // 担当者一覧取得
+      const { data: assigneesData } = await supabase
+        .from('assignees')
+        .select('*')
+        .order('name')
+
+      setAssignees(assigneesData || [])
+
       // 初期フォームデータ設定
       const initialForms: typeof taskForms = {}
       tasksData?.forEach((task: UnregisteredTask) => {
@@ -65,7 +75,8 @@ export default function UnregisteredTasksPage() {
           description: lines.slice(1).join('\n') || '',
           projectId: '',
           priority: 5,
-          deadline: ''
+          deadline: '',
+          assigneeId: ''
         }
       })
       setTaskForms(initialForms)
@@ -116,7 +127,8 @@ export default function UnregisteredTasksPage() {
           project_id: form.projectId,
           priority: form.priority,
           deadline: form.deadline || null,
-          status: 'not_started'
+          status: 'not_started',
+          assignee_id: form.assigneeId || null
         })
 
       if (taskError) throw taskError
@@ -319,6 +331,26 @@ export default function UnregisteredTasksPage() {
                           onChange={(e) => updateTaskForm(task.id, 'deadline', e.target.value)}
                         />
                       </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor={`assignee-${task.id}`}>担当者</Label>
+                      <Select
+                        value={taskForms[task.id].assigneeId}
+                        onValueChange={(value) => updateTaskForm(task.id, 'assigneeId', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="担当者を選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">未割当</SelectItem>
+                          {assignees.map((assignee) => (
+                            <SelectItem key={assignee.id} value={assignee.id}>
+                              {assignee.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="flex justify-end gap-2 pt-4">

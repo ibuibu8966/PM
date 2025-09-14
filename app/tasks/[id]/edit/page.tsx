@@ -28,6 +28,7 @@ export default function EditTaskPage() {
   
   const [task, setTask] = useState<Task | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
+  const [assignees, setAssignees] = useState<{id: string, name: string}[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
@@ -36,7 +37,8 @@ export default function EditTaskPage() {
     project_id: '',
     status: 'not_started',
     priority: 5,
-    deadline: ''
+    deadline: '',
+    assignee_id: ''
   })
 
   useEffect(() => {
@@ -62,7 +64,8 @@ export default function EditTaskPage() {
         project_id: taskData.project_id,
         status: taskData.status,
         priority: taskData.priority,
-        deadline: taskData.deadline ? taskData.deadline.split('T')[0] : ''
+        deadline: taskData.deadline ? taskData.deadline.split('T')[0] : '',
+        assignee_id: taskData.assignee_id || ''
       })
 
       // プロジェクト一覧取得
@@ -73,6 +76,14 @@ export default function EditTaskPage() {
 
       if (projectsError) throw projectsError
       setProjects(projectsData || [])
+
+      // 担当者一覧取得
+      const { data: assigneesData } = await supabase
+        .from('assignees')
+        .select('*')
+        .order('name')
+
+      setAssignees(assigneesData || [])
 
     } catch (error) {
       console.error('データ取得エラー:', error)
@@ -101,7 +112,8 @@ export default function EditTaskPage() {
           project_id: formData.project_id,
           status: formData.status,
           priority: formData.priority,
-          deadline: formData.deadline || null
+          deadline: formData.deadline || null,
+          assignee_id: formData.assignee_id || null
         })
         .eq('id', taskId)
 
@@ -240,6 +252,26 @@ export default function EditTaskPage() {
                   onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="assignee">担当者</Label>
+              <Select
+                value={formData.assignee_id}
+                onValueChange={(value) => setFormData({ ...formData, assignee_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="担当者を選択" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">未割当</SelectItem>
+                  {assignees.map((assignee) => (
+                    <SelectItem key={assignee.id} value={assignee.id}>
+                      {assignee.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex gap-4">
