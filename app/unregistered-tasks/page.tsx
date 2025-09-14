@@ -58,7 +58,7 @@ export default function UnregisteredTasksPage() {
 
       // 初期フォームデータ設定
       const initialForms: typeof taskForms = {}
-      tasksData?.forEach(task => {
+      tasksData?.forEach((task: UnregisteredTask) => {
         const lines = task.content.split('\n')
         initialForms[task.id] = {
           title: lines[0] || '',
