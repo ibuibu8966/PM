@@ -30,8 +30,6 @@ export default function EditProjectPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [customers, setCustomers] = useState<Customer[]>([])
   const [lineGroups, setLineGroups] = useState<LineGroup[]>([])
-  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([])
-  const [selectedLineGroups, setSelectedLineGroups] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
@@ -39,7 +37,9 @@ export default function EditProjectPage() {
     description: '',
     status: 'not_started',
     priority: 5,
-    deadline: ''
+    deadline: '',
+    selectedCustomers: [] as string[],
+    selectedLineGroups: [] as string[]
   })
 
   useEffect(() => {
@@ -64,7 +64,9 @@ export default function EditProjectPage() {
         description: projectData.description || '',
         status: projectData.status,
         priority: projectData.priority,
-        deadline: projectData.deadline ? projectData.deadline.split('T')[0] : ''
+        deadline: projectData.deadline ? projectData.deadline.split('T')[0] : '',
+        selectedCustomers: [],
+        selectedLineGroups: []
       })
 
       // 顧客一覧取得
@@ -86,14 +88,16 @@ export default function EditProjectPage() {
         .from('project_customers')
         .select('customer_id')
         .eq('project_id', projectId)
-      setSelectedCustomers(customerRelations?.map((r: { customer_id: string }) => r.customer_id) || [])
+      const customerIds = customerRelations?.map((r: { customer_id: string }) => r.customer_id) || []
+      setFormData(prev => ({ ...prev, selectedCustomers: customerIds }))
 
       // 関連LINEグループ取得
       const { data: lineGroupRelations } = await supabase
         .from('project_line_groups')
         .select('line_group_id')
         .eq('project_id', projectId)
-      setSelectedLineGroups(lineGroupRelations?.map((r: { line_group_id: string }) => r.line_group_id) || [])
+      const lineGroupIds = lineGroupRelations?.map((r: { line_group_id: string }) => r.line_group_id) || []
+      setFormData(prev => ({ ...prev, selectedLineGroups: lineGroupIds }))
 
     } catch (error) {
       console.error('データ取得エラー:', error)
@@ -134,8 +138,8 @@ export default function EditProjectPage() {
         .delete()
         .eq('project_id', projectId)
 
-      if (selectedCustomers.length > 0) {
-        const customerRelations = selectedCustomers.map(customerId => ({
+      if (formData.selectedCustomers.length > 0) {
+        const customerRelations = formData.selectedCustomers.map(customerId => ({
           project_id: projectId,
           customer_id: customerId
         }))
@@ -150,8 +154,8 @@ export default function EditProjectPage() {
         .delete()
         .eq('project_id', projectId)
 
-      if (selectedLineGroups.length > 0) {
-        const lineGroupRelations = selectedLineGroups.map(lineGroupId => ({
+      if (formData.selectedLineGroups.length > 0) {
+        const lineGroupRelations = formData.selectedLineGroups.map(lineGroupId => ({
           project_id: projectId,
           line_group_id: lineGroupId
         }))
@@ -283,8 +287,8 @@ export default function EditProjectPage() {
               </Label>
               <SearchableMultiSelect
                 options={customers}
-                selected={selectedCustomers}
-                onChange={setSelectedCustomers}
+                selected={formData.selectedCustomers}
+                onChange={(selected) => setFormData({ ...formData, selectedCustomers: selected })}
                 placeholder="顧客を選択..."
                 searchPlaceholder="顧客名で検索..."
               />
@@ -298,8 +302,8 @@ export default function EditProjectPage() {
               </Label>
               <SearchableMultiSelect
                 options={lineGroups}
-                selected={selectedLineGroups}
-                onChange={setSelectedLineGroups}
+                selected={formData.selectedLineGroups}
+                onChange={(selected) => setFormData({ ...formData, selectedLineGroups: selected })}
                 placeholder="LINEグループを選択..."
                 searchPlaceholder="グループ名で検索..."
               />
