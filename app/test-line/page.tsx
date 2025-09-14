@@ -10,7 +10,12 @@ export default function TestLinePage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [groupName, setGroupName] = useState('テストグループ')
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<{
+    success?: boolean
+    error?: string
+    message?: string
+    task?: unknown
+  } | null>(null)
   const [loading, setLoading] = useState(false)
 
   const sendTestTask = async () => {
@@ -38,7 +43,7 @@ export default function TestLinePage() {
         setTitle('')
         setDescription('')
       }
-    } catch (error) {
+    } catch {
       setResult({ error: 'リクエストに失敗しました' })
     } finally {
       setLoading(false)
