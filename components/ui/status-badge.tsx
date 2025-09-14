@@ -13,22 +13,22 @@ export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
     not_started: {
       label: '未着手',
       icon: CircleDot,
-      className: 'bg-slate-100 text-slate-800 hover:bg-slate-200 border-slate-400 font-semibold'
+      className: 'bg-slate-100 text-slate-800 hover:bg-slate-200 border-slate-400 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:border-slate-600 font-semibold'
     },
     waiting_confirmation: {
       label: '確認待ち',
       icon: Clock,
-      className: 'bg-amber-50 text-amber-800 hover:bg-amber-100 border-amber-500 font-semibold'
+      className: 'bg-amber-50 text-amber-800 hover:bg-amber-100 border-amber-500 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50 dark:border-amber-600 font-semibold'
     },
     in_progress: {
       label: '進行中',
       icon: AlertCircle,
-      className: 'bg-blue-50 text-blue-800 hover:bg-blue-100 border-blue-500 font-semibold'
+      className: 'bg-blue-50 text-blue-800 hover:bg-blue-100 border-blue-500 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 dark:border-blue-600 font-semibold'
     },
     completed: {
       label: '完了',
       icon: CheckCircle2,
-      className: 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border-emerald-500 font-semibold'
+      className: 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 dark:border-emerald-600 font-semibold'
     }
   }
 

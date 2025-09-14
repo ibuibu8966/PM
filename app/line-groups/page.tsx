@@ -139,7 +139,7 @@ export default function LineGroupsPage() {
       </Card>
 
       {/* LINEグループリスト */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {filteredLineGroups.length === 0 ? (
           <Card className="col-span-full">
             <CardContent className="text-center py-12">
@@ -151,40 +151,42 @@ export default function LineGroupsPage() {
         ) : (
           filteredLineGroups.map((lineGroup) => (
             <Card key={lineGroup.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
+              <CardHeader className="p-4">
                 <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-green-600" />
-                    <Link href={`/line-groups/${lineGroup.id}`}>
-                      <CardTitle className="text-lg hover:text-primary cursor-pointer transition-colors">
+                  <Link href={`/line-groups/${lineGroup.id}`} className="flex-1">
+                    <div className="flex items-start gap-2">
+                      <MessageSquare className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
                         {lineGroup.name}
                       </CardTitle>
-                    </Link>
-                  </div>
-                  <div className="flex gap-1">
+                    </div>
+                  </Link>
+                  <div className="flex gap-1 ml-2">
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-7 w-7 p-0"
                       onClick={() => {
                         setEditingGroup(lineGroup)
                         setIsEditDialogOpen(true)
                       }}
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-3 w-3" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-7 w-7 p-0"
                       onClick={() => handleDeleteLineGroup(lineGroup.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  作成日: {new Date(lineGroup.created_at).toLocaleDateString('ja-JP')}
+              <CardContent className="pt-0 px-4 pb-4">
+                <p className="text-xs text-muted-foreground">
+                  {new Date(lineGroup.created_at).toLocaleDateString('ja-JP')}
                 </p>
               </CardContent>
             </Card>

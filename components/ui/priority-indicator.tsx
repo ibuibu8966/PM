@@ -10,26 +10,26 @@ export function PriorityIndicator({ priority, showLabel = true, size = 'md' }: P
   const getPriorityConfig = (priority: number) => {
     if (priority >= 8) {
       return {
-        color: 'text-red-600',
-        bgColor: 'bg-red-100',
-        borderColor: 'border-red-400',
+        color: 'text-red-600 dark:text-red-400',
+        bgColor: 'bg-red-100 dark:bg-red-900/30',
+        borderColor: 'border-red-400 dark:border-red-600',
         icon: Flame,
         label: '最優先'
       }
     }
     if (priority >= 5) {
       return {
-        color: 'text-orange-600',
-        bgColor: 'bg-orange-100',
-        borderColor: 'border-orange-400',
+        color: 'text-orange-600 dark:text-orange-400',
+        bgColor: 'bg-orange-100 dark:bg-orange-900/30',
+        borderColor: 'border-orange-400 dark:border-orange-600',
         icon: TrendingUp,
         label: '高'
       }
     }
     return {
-      color: 'text-gray-600',
-      bgColor: 'bg-gray-100',
-      borderColor: 'border-gray-400',
+      color: 'text-gray-600 dark:text-gray-400',
+      bgColor: 'bg-gray-100 dark:bg-gray-800',
+      borderColor: 'border-gray-400 dark:border-gray-600',
       icon: Minus,
       label: '通常'
     }
