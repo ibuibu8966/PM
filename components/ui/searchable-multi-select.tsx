@@ -133,11 +133,16 @@ export function SearchableMultiSelect({
               filteredOptions.map(option => (
                 <button
                   key={option.id}
+                  type="button"
                   className={cn(
                     "relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 px-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
                     selected.includes(option.id) && "bg-accent/50"
                   )}
-                  onClick={() => toggleOption(option.id)}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    toggleOption(option.id)
+                  }}
                 >
                   <Check
                     className={cn(
