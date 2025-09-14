@@ -3,14 +3,15 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { 
-  Home, 
-  FolderOpen, 
-  CheckSquare, 
-  Users, 
+import {
+  Home,
+  FolderOpen,
+  CheckSquare,
+  Users,
   MessageSquare,
   Menu,
-  X
+  X,
+  UserCheck
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -24,6 +25,7 @@ export default function Navigation() {
     { href: '/tasks', label: 'タスク', icon: CheckSquare },
     { href: '/customers', label: '顧客', icon: Users },
     { href: '/line-groups', label: 'LINEグループ', icon: MessageSquare },
+    { href: '/assignees', label: '担当者別', icon: UserCheck },
   ]
 
   const isActive = (href: string) => {

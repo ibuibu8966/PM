@@ -7,14 +7,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { ActionButton } from '@/components/ui/action-button'
-import { Plus, Calendar, AlertCircle, FolderOpen, CheckSquare, Users, MessageSquare, ArrowRight, Sparkles, Clock, TrendingUp, Target, Inbox } from 'lucide-react'
+import { Plus, Calendar, AlertCircle, FolderOpen, CheckSquare, Users, MessageSquare, ArrowRight, Sparkles, Clock, TrendingUp, Target, Inbox, User } from 'lucide-react'
 import Link from 'next/link'
+
+type Assignee = {
+  id: string
+  name: string
+}
+
+type AssigneeStats = {
+  assignee: Assignee
+  taskCount: number
+  inProgressCount: number
+  overdueCount: number
+}
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [todayTasks, setTodayTasks] = useState<Task[]>([])
   const [unregisteredTasks, setUnregisteredTasks] = useState<UnregisteredTask[]>([])
   const [lineGroups, setLineGroups] = useState<{ [key: string]: LineGroup }>({})
+  const [assigneeStats, setAssigneeStats] = useState<AssigneeStats[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -27,8 +40,8 @@ export default function DashboardPage() {
     try {
       const today = new Date().toISOString().split('T')[0]
       
-      // プロジェクト、タスク、未登録タスクを並列で取得
-      const [projectsResult, tasksResult, unregisteredResult] = await Promise.all([
+      // プロジェクト、タスク、未登録タスク、担当者を並列で取得
+      const [projectsResult, tasksResult, unregisteredResult, assigneesResult, allTasksResult] = await Promise.all([
         supabase
           .from('projects')
           .select('*')
@@ -45,34 +58,73 @@ export default function DashboardPage() {
         supabase
           .from('unregistered_tasks')
           .select('*')
-          .eq('processed', false)
-          .order('received_at', { ascending: false })
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('assignees')
+          .select('*')
+          .order('name'),
+        supabase
+          .from('tasks')
+          .select('*')
+          .in('status', ['not_started', 'in_progress', 'waiting_confirmation'])
       ])
 
-      if (projectsResult.error) throw projectsResult.error
-      if (tasksResult.error) throw tasksResult.error
-      if (unregisteredResult.error) throw unregisteredResult.error
-      
+      if (projectsResult.error) {
+        console.error('プロジェクト取得エラー:', projectsResult.error)
+        throw projectsResult.error
+      }
+      if (tasksResult.error) {
+        console.error('タスク取得エラー:', tasksResult.error)
+        throw tasksResult.error
+      }
+      if (unregisteredResult.error) {
+        console.error('未登録タスク取得エラー:', unregisteredResult.error)
+        throw unregisteredResult.error
+      }
+      if (assigneesResult.error) {
+        console.error('担当者取得エラー:', assigneesResult.error)
+        // 担当者テーブルがまだない場合はエラーを無視
+        console.log('担当者テーブルが存在しない可能性があります。SQLを実行してください。')
+      }
+      if (allTasksResult.error) {
+        console.error('全タスク取得エラー:', allTasksResult.error)
+        throw allTasksResult.error
+      }
+
       setProjects(projectsResult.data || [])
       setTodayTasks(tasksResult.data || [])
       setUnregisteredTasks(unregisteredResult.data || [])
-      
-      // 未登録タスクに関連するLINEグループ情報を取得
-      if (unregisteredResult.data && unregisteredResult.data.length > 0) {
-        const lineGroupIds = [...new Set(unregisteredResult.data.map((t: UnregisteredTask) => t.line_group_id))]
-        const { data: lineGroupsData } = await supabase
-          .from('line_groups')
-          .select('*')
-          .in('id', lineGroupIds)
-        
-        if (lineGroupsData) {
-          const groupsMap: { [key: string]: LineGroup } = {}
-          lineGroupsData.forEach((g: LineGroup) => {
-            groupsMap[g.id] = g
-          })
-          setLineGroups(groupsMap)
-        }
+
+      // 担当者別統計を計算（担当者データがある場合のみ）
+      if (!assigneesResult.error && assigneesResult.data) {
+        const stats: AssigneeStats[] = []
+        const assignees = assigneesResult.data || []
+        const allTasks = allTasksResult.data || []
+        const now = new Date()
+
+        assignees.forEach(assignee => {
+          const assigneeTasks = allTasks.filter((t: any) => t.assignee_id === assignee.id)
+          const inProgress = assigneeTasks.filter((t: any) => t.status === 'in_progress').length
+          const overdue = assigneeTasks.filter((t: any) =>
+            t.deadline && new Date(t.deadline) < now && t.status !== 'completed'
+          ).length
+
+          if (assigneeTasks.length > 0) {
+            stats.push({
+              assignee,
+              taskCount: assigneeTasks.length,
+              inProgressCount: inProgress,
+              overdueCount: overdue
+            })
+          }
+        })
+
+        setAssigneeStats(stats)
       }
+      
+      // 未登録タスクは現在のスキーマではLINEグループ名のみを持つため、
+      // LINEグループ情報の取得はスキップ
     } catch (error: any) {
       console.error('データ取得エラー:', error)
       console.error('エラー詳細:', error?.message || error)
@@ -171,6 +223,59 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* 担当者別サマリー */}
+      {assigneeStats.length > 0 && (
+        <Card className="mb-4 md:mb-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950 dark:to-teal-950 p-4 md:p-6">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <Users className="h-4 md:h-5 w-4 md:w-5 text-green-600" />
+                担当者別タスク状況
+              </CardTitle>
+              <Link href="/assignees/tasks">
+                <ActionButton
+                  icon={<ArrowRight className="h-4 w-4" />}
+                  label="詳細"
+                  size="sm"
+                  tooltip="担当者別詳細を表示"
+                  variant="outline"
+                />
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {assigneeStats.map(stat => (
+                <div
+                  key={stat.assignee.id}
+                  className="p-3 border rounded-lg hover:border-primary hover:bg-primary/5 transition-all"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-gray-600" />
+                      <span className="font-medium text-sm">{stat.assignee.name}</span>
+                    </div>
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      {stat.taskCount}件
+                    </span>
+                  </div>
+                  <div className="flex gap-3 text-xs">
+                    <span className="text-blue-600">
+                      進行中: <strong>{stat.inProgressCount}</strong>
+                    </span>
+                    {stat.overdueCount > 0 && (
+                      <span className="text-red-600">
+                        期限切れ: <strong>{stat.overdueCount}</strong>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:gap-6 md:grid-cols-2">
         {/* 今日のタスク */}
@@ -312,11 +417,11 @@ export default function DashboardPage() {
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
                       <h4 className="font-semibold text-sm md:text-base mb-1">
-                        {task.title}
+                        {task.content}
                       </h4>
-                      {task.description && (
-                        <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
-                          {task.description}
+                      {task.sender_name && (
+                        <p className="text-xs md:text-sm text-muted-foreground">
+                          送信者: {task.sender_name}
                         </p>
                       )}
                     </div>
@@ -331,15 +436,13 @@ export default function DashboardPage() {
                     </Link>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    {lineGroups[task.line_group_id] && (
-                      <span className="flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3" />
-                        {lineGroups[task.line_group_id].name}
-                      </span>
-                    )}
+                    <span className="flex items-center gap-1">
+                      <MessageSquare className="h-3 w-3" />
+                      {task.line_group_name}
+                    </span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {new Date(task.received_at).toLocaleString('ja-JP', {
+                      {new Date(task.created_at).toLocaleString('ja-JP', {
                         month: 'numeric',
                         day: 'numeric',
                         hour: '2-digit',

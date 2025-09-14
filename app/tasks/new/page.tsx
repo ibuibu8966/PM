@@ -91,18 +91,24 @@ export default function NewTaskPage() {
     setLoading(true)
 
     try {
-      // タスク作成（ステータスは常に'not_started'）
+      // タスク作成データの準備
+      const taskData: any = {
+        title: formData.title,
+        description: formData.description,
+        project_id: formData.projectId,
+        priority: formData.priority,
+        status: 'not_started',
+        deadline: formData.deadline || null
+      }
+
+      // 担当者IDがある場合のみ追加（カラムが存在しない場合のエラーを回避）
+      if (formData.assigneeId) {
+        taskData.assignee_id = formData.assigneeId
+      }
+
       const { error: taskError } = await supabase
         .from('tasks')
-        .insert({
-          title: formData.title,
-          description: formData.description,
-          project_id: formData.projectId,
-          priority: formData.priority,
-          status: 'not_started',
-          deadline: formData.deadline || null,
-          assignee_id: formData.assigneeId || null
-        })
+        .insert(taskData)
         .select()
         .single()
 
@@ -110,9 +116,10 @@ export default function NewTaskPage() {
 
 
       router.push('/tasks')
-    } catch (error) {
+    } catch (error: any) {
       console.error('タスク作成エラー:', error)
-      alert('タスクの作成に失敗しました')
+      console.error('エラー詳細:', error?.message || error)
+      alert(`タスクの作成に失敗しました: ${error?.message || 'Unknown error'}`)
     } finally {
       setLoading(false)
     }

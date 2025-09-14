@@ -75,27 +75,35 @@ export default function TasksPage() {
 
   const fetchData = async () => {
     try {
-      // 担当者取得
+      // 担当者取得（エラーがあっても続行）
       const { data: assigneesData, error: assigneesError } = await supabase
         .from('assignees')
         .select('*')
         .order('name')
 
-      if (assigneesError) throw assigneesError
-      setAssignees(assigneesData || [])
+      if (assigneesError) {
+        console.log('担当者テーブルが存在しない可能性があります:', assigneesError)
+        setAssignees([])
+      } else {
+        setAssignees(assigneesData || [])
+      }
 
-      // タスク取得（担当者情報を含む）
+      // タスク取得（担当者情報は別途取得）
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
-        .select(`
-          *,
-          assignee:assignees(*)
-        `)
+        .select('*')
         .order('priority', { ascending: false })
         .order('deadline', { ascending: true })
 
       if (tasksError) throw tasksError
-      setTasks(tasksData || [])
+
+      // 担当者情報をタスクに追加（担当者データがある場合）
+      const tasksWithAssignees = tasksData?.map(task => {
+        const assignee = assigneesData?.find(a => a.id === task.assignee_id)
+        return { ...task, assignee }
+      }) || []
+
+      setTasks(tasksWithAssignees)
 
       // プロジェクト情報取得
       if (tasksData && tasksData.length > 0) {
@@ -113,8 +121,9 @@ export default function TasksPage() {
         })
         setProjects(projectsMap)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('データ取得エラー:', error)
+      console.error('エラー詳細:', error?.message || error)
     } finally {
       setLoading(false)
     }
