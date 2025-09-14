@@ -305,7 +305,7 @@ export default function DashboardPage() {
 
       {/* 統計カード */}
       <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4 mb-4 md:mb-6">
-        <Card className="border-l-4 border-l-red-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/tasks'}>
+        <Card className="border-l-4 border-l-red-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/tasks?filter=overdue'}>
           <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -316,7 +316,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/tasks'}>
+        <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/tasks?filter=high-priority'}>
           <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -327,7 +327,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/tasks'}>
+        <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/tasks?filter=today'}>
           <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -338,7 +338,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/projects'}>
+        <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/projects?filter=in-progress'}>
           <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -376,7 +376,8 @@ export default function DashboardPage() {
               {assigneeStats.map(stat => (
                 <div
                   key={stat.assignee.id}
-                  className="p-3 border rounded-lg hover:border-primary hover:bg-primary/5 transition-all"
+                  className="p-3 border rounded-lg hover:border-primary hover:bg-primary/5 transition-all cursor-pointer"
+                  onClick={() => window.location.href = `/tasks?assignee=${stat.assignee.id}`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Task, Project } from '@/lib/types/database'
 import { Card, CardContent } from '@/components/ui/card'
@@ -23,18 +24,39 @@ type TaskWithAssignee = Task & {
 }
 
 export default function TasksPage() {
+  const searchParams = useSearchParams()
   const [tasks, setTasks] = useState<TaskWithAssignee[]>([])
   const [projects, setProjects] = useState<{ [key: string]: Project }>({})
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [assigneeFilter, setAssigneeFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'priority' | 'deadline'>('priority')
   const [showFilters, setShowFilters] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
+    // URLパラメータからフィルタを設定
+    const filter = searchParams.get('filter')
+    const assigneeId = searchParams.get('assignee')
+
+    if (filter === 'overdue') {
+      setStatusFilter('overdue')
+      setSortBy('deadline')
+    } else if (filter === 'high-priority') {
+      setSortBy('priority')
+      setStatusFilter('active')
+    } else if (filter === 'today') {
+      setStatusFilter('today')
+      setSortBy('priority')
+    }
+
+    if (assigneeId) {
+      setAssigneeFilter(assigneeId)
+    }
+
     fetchData()
-  }, [])
+  }, [searchParams])
 
   const updateTaskStatus = async (taskId: string, newStatus: StatusType) => {
     const { error } = await supabase
@@ -131,8 +153,29 @@ export default function TasksPage() {
     .filter(task => {
       const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            task.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesStatus = statusFilter === 'all' || task.status === statusFilter
-      return matchesSearch && matchesStatus
+
+      // ステータスフィルタ
+      let matchesStatus = true
+      const now = new Date()
+      if (statusFilter === 'overdue') {
+        matchesStatus = task.deadline ? new Date(task.deadline) < now && task.status !== 'completed' : false
+      } else if (statusFilter === 'active') {
+        matchesStatus = task.status !== 'completed'
+      } else if (statusFilter === 'today') {
+        const today = new Date().toISOString().split('T')[0]
+        matchesStatus = task.deadline ? task.deadline.split('T')[0] <= today && task.status !== 'completed' : false
+      } else if (statusFilter !== 'all') {
+        matchesStatus = task.status === statusFilter
+      }
+
+      // 担当者フィルタ
+      const matchesAssignee = assigneeFilter === 'all' || task.assignee_id === assigneeFilter
+
+      // 高優先度フィルタ（URLパラメータから）
+      const filterParam = searchParams.get('filter')
+      const matchesPriority = filterParam === 'high-priority' ? task.priority >= 8 : true
+
+      return matchesSearch && matchesStatus && matchesAssignee && matchesPriority
     })
     .sort((a, b) => {
       if (sortBy === 'priority') {

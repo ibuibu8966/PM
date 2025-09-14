@@ -10,25 +10,25 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
   const statusConfig = {
-    not_started: { 
-      label: '未着手', 
+    not_started: {
+      label: '未着手',
       icon: CircleDot,
-      className: 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300'
+      className: 'bg-slate-100 text-slate-800 hover:bg-slate-200 border-slate-400 font-semibold'
     },
-    waiting_confirmation: { 
-      label: '確認待ち', 
+    waiting_confirmation: {
+      label: '確認待ち',
       icon: Clock,
-      className: 'bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-300'
+      className: 'bg-amber-50 text-amber-800 hover:bg-amber-100 border-amber-500 font-semibold'
     },
-    in_progress: { 
-      label: '進行中', 
+    in_progress: {
+      label: '進行中',
       icon: AlertCircle,
-      className: 'bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-300'
+      className: 'bg-blue-50 text-blue-800 hover:bg-blue-100 border-blue-500 font-semibold'
     },
-    completed: { 
-      label: '完了', 
+    completed: {
+      label: '完了',
       icon: CheckCircle2,
-      className: 'bg-green-100 text-green-700 hover:bg-green-200 border-green-300'
+      className: 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border-emerald-500 font-semibold'
     }
   }
 

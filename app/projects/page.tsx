@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Project, Customer, LineGroup } from '@/lib/types/database'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,6 +15,7 @@ import { Plus, Search, Calendar, Users, MessageSquare, FolderOpen, ArrowRight, E
 import Link from 'next/link'
 
 export default function ProjectsPage() {
+  const searchParams = useSearchParams()
   const [projects, setProjects] = useState<Project[]>([])
   const [projectRelations, setProjectRelations] = useState<{
     [key: string]: { customers: Customer[], lineGroups: LineGroup[] }
@@ -26,9 +28,16 @@ export default function ProjectsPage() {
   const supabase = createClient()
 
   useEffect(() => {
+    // URLパラメータからフィルタを設定
+    const filter = searchParams.get('filter')
+
+    if (filter === 'in-progress') {
+      setStatusFilter('in_progress')
+    }
+
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [searchParams])
 
   const updateProjectStatus = async (projectId: string, newStatus: StatusType) => {
     const { error } = await supabase
