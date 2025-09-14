@@ -58,13 +58,18 @@ export default function UnregisteredTasksPage() {
 
       setProjects(projectsData || [])
 
-      // 担当者一覧取得
-      const { data: assigneesData } = await supabase
-        .from('assignees')
-        .select('*')
-        .order('name')
+      // 担当者一覧取得（エラーの場合は空配列）
+      try {
+        const { data: assigneesData } = await supabase
+          .from('assignees')
+          .select('*')
+          .order('name')
 
-      setAssignees(assigneesData || [])
+        setAssignees(assigneesData || [])
+      } catch (assigneeError) {
+        console.log('担当者データ取得エラー（テーブルが存在しない可能性があります）:', assigneeError)
+        setAssignees([])
+      }
 
       // 初期フォームデータ設定
       const initialForms: typeof taskForms = {}

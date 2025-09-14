@@ -111,9 +111,11 @@ export default function DashboardPage() {
       setTodayTasks(tasksResult.data || [])
       setUnregisteredTasks(unregisteredResult.data || [])
 
-      // 担当者データを設定
+      // 担当者データを設定（エラーの場合は空配列）
       if (!assigneesResult.error && assigneesResult.data) {
         setAssignees(assigneesResult.data)
+      } else {
+        setAssignees([])
       }
 
       // 未登録タスクの初期フォームデータを設定
@@ -209,7 +211,7 @@ export default function DashboardPage() {
           priority: form.priority,
           deadline: form.deadline || null,
           status: 'not_started',
-          assignee_id: form.assigneeId || null
+          assignee_id: form.assigneeId === 'none' || !form.assigneeId ? null : form.assigneeId
         })
 
       if (taskError) throw taskError
@@ -652,15 +654,15 @@ export default function DashboardPage() {
                       <div>
                         <Label htmlFor={`assignee-${task.id}`} className="text-sm">担当者</Label>
                         <Select
-                          value={taskForms[task.id].assigneeId}
+                          value={taskForms[task.id]?.assigneeId || ''}
                           onValueChange={(value) => updateTaskForm(task.id, 'assigneeId', value)}
                         >
                           <SelectTrigger className="mt-1">
                             <SelectValue placeholder="担当者を選択" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">未割当</SelectItem>
-                            {assignees.map((assignee) => (
+                            <SelectItem value="none">未割当</SelectItem>
+                            {assignees && assignees.map((assignee) => (
                               <SelectItem key={assignee.id} value={assignee.id}>
                                 {assignee.name}
                               </SelectItem>
