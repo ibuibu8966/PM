@@ -9,14 +9,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select'
+import { SearchableMultiSelect } from '@/components/ui/searchable-multi-select'
 import { ActionButton } from '@/components/ui/action-button'
 import { ArrowLeft, Save, X, FolderOpen, Users, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
@@ -169,21 +169,6 @@ export default function EditProjectPage() {
     }
   }
 
-  const toggleCustomer = (customerId: string) => {
-    setSelectedCustomers(prev =>
-      prev.includes(customerId)
-        ? prev.filter(id => id !== customerId)
-        : [...prev, customerId]
-    )
-  }
-
-  const toggleLineGroup = (lineGroupId: string) => {
-    setSelectedLineGroups(prev =>
-      prev.includes(lineGroupId)
-        ? prev.filter(id => id !== lineGroupId)
-        : [...prev, lineGroupId]
-    )
-  }
 
   if (loading) {
     return (
@@ -292,60 +277,32 @@ export default function EditProjectPage() {
 
             {/* 顧客選択 */}
             <div>
-              <Label className="flex items-center gap-2 mb-3">
+              <Label className="flex items-center gap-2 mb-2">
                 <Users className="h-4 w-4 text-blue-600" />
                 関連顧客
               </Label>
-              <div className="border rounded-lg p-4 max-h-48 overflow-y-auto space-y-2">
-                {customers.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">顧客が登録されていません</p>
-                ) : (
-                  customers.map((customer) => (
-                    <div key={customer.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`customer-${customer.id}`}
-                        checked={selectedCustomers.includes(customer.id)}
-                        onCheckedChange={() => toggleCustomer(customer.id)}
-                      />
-                      <Label
-                        htmlFor={`customer-${customer.id}`}
-                        className="text-sm font-normal cursor-pointer"
-                      >
-                        {customer.name}
-                      </Label>
-                    </div>
-                  ))
-                )}
-              </div>
+              <SearchableMultiSelect
+                options={customers}
+                selected={selectedCustomers}
+                onChange={setSelectedCustomers}
+                placeholder="顧客を選択..."
+                searchPlaceholder="顧客名で検索..."
+              />
             </div>
 
             {/* LINEグループ選択 */}
             <div>
-              <Label className="flex items-center gap-2 mb-3">
+              <Label className="flex items-center gap-2 mb-2">
                 <MessageSquare className="h-4 w-4 text-green-600" />
                 関連LINEグループ
               </Label>
-              <div className="border rounded-lg p-4 max-h-48 overflow-y-auto space-y-2">
-                {lineGroups.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">LINEグループが登録されていません</p>
-                ) : (
-                  lineGroups.map((lineGroup) => (
-                    <div key={lineGroup.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`linegroup-${lineGroup.id}`}
-                        checked={selectedLineGroups.includes(lineGroup.id)}
-                        onCheckedChange={() => toggleLineGroup(lineGroup.id)}
-                      />
-                      <Label
-                        htmlFor={`linegroup-${lineGroup.id}`}
-                        className="text-sm font-normal cursor-pointer"
-                      >
-                        {lineGroup.name}
-                      </Label>
-                    </div>
-                  ))
-                )}
-              </div>
+              <SearchableMultiSelect
+                options={lineGroups}
+                selected={selectedLineGroups}
+                onChange={setSelectedLineGroups}
+                placeholder="LINEグループを選択..."
+                searchPlaceholder="グループ名で検索..."
+              />
             </div>
 
             <div className="flex gap-4">

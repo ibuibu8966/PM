@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { ArrowLeft } from 'lucide-react'
+import { SearchableMultiSelect } from '@/components/ui/searchable-multi-select'
+import { ArrowLeft, Users, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 
 export default function NewProjectPage() {
@@ -111,23 +111,6 @@ export default function NewProjectPage() {
     }
   }
 
-  const toggleCustomer = (customerId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedCustomers: prev.selectedCustomers.includes(customerId)
-        ? prev.selectedCustomers.filter(id => id !== customerId)
-        : [...prev.selectedCustomers, customerId]
-    }))
-  }
-
-  const toggleLineGroup = (lineGroupId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedLineGroups: prev.selectedLineGroups.includes(lineGroupId)
-        ? prev.selectedLineGroups.filter(id => id !== lineGroupId)
-        : [...prev.selectedLineGroups, lineGroupId]
-    }))
-  }
 
 
   return (
@@ -214,53 +197,31 @@ export default function NewProjectPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>顧客</Label>
-              <div className="space-y-2 mt-2 max-h-40 overflow-y-auto border rounded-md p-3">
-                {customers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">顧客が登録されていません</p>
-                ) : (
-                  customers.map((customer) => (
-                    <div key={customer.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`customer-${customer.id}`}
-                        checked={formData.selectedCustomers.includes(customer.id)}
-                        onCheckedChange={() => toggleCustomer(customer.id)}
-                      />
-                      <Label
-                        htmlFor={`customer-${customer.id}`}
-                        className="text-sm font-normal cursor-pointer"
-                      >
-                        {customer.name}
-                      </Label>
-                    </div>
-                  ))
-                )}
-              </div>
+              <Label className="flex items-center gap-2 mb-2">
+                <Users className="h-4 w-4 text-blue-600" />
+                関連顧客
+              </Label>
+              <SearchableMultiSelect
+                options={customers}
+                selected={formData.selectedCustomers}
+                onChange={(selected) => setFormData({ ...formData, selectedCustomers: selected })}
+                placeholder="顧客を選択..."
+                searchPlaceholder="顧客名で検索..."
+              />
             </div>
 
             <div>
-              <Label>LINEグループ</Label>
-              <div className="space-y-2 mt-2 max-h-40 overflow-y-auto border rounded-md p-3">
-                {lineGroups.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">LINEグループが登録されていません</p>
-                ) : (
-                  lineGroups.map((lineGroup) => (
-                    <div key={lineGroup.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`linegroup-${lineGroup.id}`}
-                        checked={formData.selectedLineGroups.includes(lineGroup.id)}
-                        onCheckedChange={() => toggleLineGroup(lineGroup.id)}
-                      />
-                      <Label
-                        htmlFor={`linegroup-${lineGroup.id}`}
-                        className="text-sm font-normal cursor-pointer"
-                      >
-                        {lineGroup.name}
-                      </Label>
-                    </div>
-                  ))
-                )}
-              </div>
+              <Label className="flex items-center gap-2 mb-2">
+                <MessageSquare className="h-4 w-4 text-green-600" />
+                関連LINEグループ
+              </Label>
+              <SearchableMultiSelect
+                options={lineGroups}
+                selected={formData.selectedLineGroups}
+                onChange={(selected) => setFormData({ ...formData, selectedLineGroups: selected })}
+                placeholder="LINEグループを選択..."
+                searchPlaceholder="グループ名で検索..."
+              />
             </div>
           </CardContent>
         </Card>
