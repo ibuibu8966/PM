@@ -56,7 +56,7 @@ export default function DashboardPage() {
       const today = new Date().toISOString().split('T')[0]
       
       // プロジェクト、タスク、未登録タスク、担当者を並列で取得
-      const [projectsResult, tasksResult, unregisteredResult, assigneesResult, allTasksResult] = await Promise.all([
+      const [projectsResult, tasksResult, highPriorityTasksResult, unregisteredResult, assigneesResult, allTasksResult] = await Promise.all([
         supabase
           .from('projects')
           .select('*')
@@ -67,6 +67,13 @@ export default function DashboardPage() {
           .from('tasks')
           .select('*')
           .lte('deadline', today)
+          .in('status', ['not_started', 'in_progress', 'waiting_confirmation'])
+          .order('priority', { ascending: false })
+          .order('deadline', { ascending: true }),
+        supabase
+          .from('tasks')
+          .select('*')
+          .gte('priority', 8)
           .in('status', ['not_started', 'in_progress', 'waiting_confirmation'])
           .order('priority', { ascending: false })
           .order('deadline', { ascending: true }),
@@ -93,6 +100,10 @@ export default function DashboardPage() {
         console.error('タスク取得エラー:', tasksResult.error)
         throw tasksResult.error
       }
+      if (highPriorityTasksResult.error) {
+        console.error('高優先度タスク取得エラー:', highPriorityTasksResult.error)
+        throw highPriorityTasksResult.error
+      }
       if (unregisteredResult.error) {
         console.error('未登録タスク取得エラー:', unregisteredResult.error)
         throw unregisteredResult.error
@@ -108,7 +119,27 @@ export default function DashboardPage() {
       }
 
       setProjects(projectsResult.data || [])
-      setTodayTasks(tasksResult.data || [])
+
+      // 今日のタスクと高優先度タスクを結合（重複を除く）
+      const todayTasksData = tasksResult.data || []
+      const highPriorityTasksData = highPriorityTasksResult.data || []
+      const combinedTasks = [...todayTasksData]
+      highPriorityTasksData.forEach((task: Task) => {
+        if (!combinedTasks.find(t => t.id === task.id)) {
+          combinedTasks.push(task)
+        }
+      })
+      // 優先度順、締切順でソート
+      combinedTasks.sort((a, b) => {
+        if (b.priority !== a.priority) {
+          return b.priority - a.priority
+        }
+        if (!a.deadline) return 1
+        if (!b.deadline) return -1
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+      })
+
+      setTodayTasks(combinedTasks)
       setUnregisteredTasks(unregisteredResult.data || [])
 
       // 担当者データを設定（エラーの場合は空配列）
@@ -732,45 +763,6 @@ export default function DashboardPage() {
           </Card>
         </div>
       )}
-
-      {/* クイックアクション */}
-      <div className="mt-6 md:mt-8">
-        <h2 className="text-sm md:text-lg font-semibold mb-3 md:mb-4 text-muted-foreground">クイックアクセス</h2>
-        <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2 md:gap-3">
-          <Link href="/tasks">
-            <ActionButton
-              icon={<CheckSquare className="h-4 w-4" />}
-              label="すべてのタスク"
-              variant="outline"
-              tooltip="タスク一覧を表示"
-            />
-          </Link>
-          <Link href="/projects">
-            <ActionButton
-              icon={<FolderOpen className="h-4 w-4" />}
-              label="すべてのプロジェクト"
-              variant="outline"
-              tooltip="プロジェクト一覧を表示"
-            />
-          </Link>
-          <Link href="/customers">
-            <ActionButton
-              icon={<Users className="h-4 w-4" />}
-              label="顧客管理"
-              variant="outline"
-              tooltip="顧客一覧を表示"
-            />
-          </Link>
-          <Link href="/line-groups">
-            <ActionButton
-              icon={<MessageSquare className="h-4 w-4" />}
-              label="LINEグループ"
-              variant="outline"
-              tooltip="LINEグループ一覧を表示"
-            />
-          </Link>
-        </div>
-      </div>
     </div>
   )
 }
