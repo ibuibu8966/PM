@@ -59,15 +59,6 @@ export default function EditProjectPage() {
       if (projectError) throw projectError
       
       setProject(projectData)
-      setFormData({
-        name: projectData.name,
-        description: projectData.description || '',
-        status: projectData.status,
-        priority: projectData.priority,
-        deadline: projectData.deadline ? projectData.deadline.split('T')[0] : '',
-        selectedCustomers: [],
-        selectedLineGroups: []
-      })
 
       // 顧客一覧取得
       const { data: customersData } = await supabase
@@ -89,7 +80,6 @@ export default function EditProjectPage() {
         .select('customer_id')
         .eq('project_id', projectId)
       const customerIds = customerRelations?.map((r: { customer_id: string }) => r.customer_id) || []
-      setFormData(prev => ({ ...prev, selectedCustomers: customerIds }))
 
       // 関連LINEグループ取得
       const { data: lineGroupRelations } = await supabase
@@ -97,7 +87,17 @@ export default function EditProjectPage() {
         .select('line_group_id')
         .eq('project_id', projectId)
       const lineGroupIds = lineGroupRelations?.map((r: { line_group_id: string }) => r.line_group_id) || []
-      setFormData(prev => ({ ...prev, selectedLineGroups: lineGroupIds }))
+
+      // フォームデータを一度に設定
+      setFormData({
+        name: projectData.name,
+        description: projectData.description || '',
+        status: projectData.status,
+        priority: projectData.priority,
+        deadline: projectData.deadline ? projectData.deadline.split('T')[0] : '',
+        selectedCustomers: customerIds,
+        selectedLineGroups: lineGroupIds
+      })
 
     } catch (error) {
       console.error('データ取得エラー:', error)
