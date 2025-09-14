@@ -407,6 +407,15 @@ export default function DashboardPage() {
                 <span>未登録タスク</span>
                 <span className="text-xs md:text-sm font-normal text-muted-foreground">({unregisteredTasks.length})</span>
               </CardTitle>
+              <Link href="/unregistered-tasks">
+                <ActionButton
+                  icon={<ArrowRight className="h-4 w-4" />}
+                  label="管理"
+                  variant="outline"
+                  size="sm"
+                  tooltip="未登録タスクを管理"
+                />
+              </Link>
             </div>
           </CardHeader>
           <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
