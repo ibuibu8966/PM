@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select'
 import { SearchableMultiSelect } from '@/components/ui/searchable-multi-select'
 import { ActionButton } from '@/components/ui/action-button'
-import { LoadingSpinner, LoadingOverlay } from '@/components/ui/loading-spinner'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useToast } from '@/contexts/toast-context'
 import { ArrowLeft, Save, X, FolderOpen, Users, MessageSquare } from 'lucide-react'
 import Link from 'next/link'

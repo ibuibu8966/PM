@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import { Task, Project } from '@/lib/types/database'
+// Note: Task and Project types are not used but may be needed for type checking in the future
 import { differenceInDays, format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 

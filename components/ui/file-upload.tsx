@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Upload, X, File, Image, FileText, Trash2 } from 'lucide-react'
+import { Upload, File, Image, FileText, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -55,7 +55,7 @@ export function FileUpload({ projectId, taskId, attachments, onAttachmentsChange
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
         const filePath = `${projectId || taskId}/${fileName}`
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('attachments')
           .upload(filePath, file)
 

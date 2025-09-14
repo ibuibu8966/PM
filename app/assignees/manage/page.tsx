@@ -24,6 +24,7 @@ export default function AssigneesPage() {
 
   useEffect(() => {
     fetchAssignees()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchAssignees = async () => {

@@ -12,8 +12,7 @@ import {
   Menu,
   X,
   UserCheck,
-  BarChart3,
-  Bell
+  BarChart3
 } from 'lucide-react'
 import { useState } from 'react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'

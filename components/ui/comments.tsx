@@ -45,6 +45,7 @@ export function Comments({ projectId, taskId }: CommentsProps) {
     return () => {
       supabase.removeChannel(channel)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, taskId])
 
   const fetchComments = async () => {

@@ -56,6 +56,7 @@ export default function TasksPage() {
     }
 
     fetchData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
   const updateTaskStatus = async (taskId: string, newStatus: StatusType) => {

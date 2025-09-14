@@ -36,6 +36,7 @@ export default function NewTaskPage() {
 
   useEffect(() => {
     fetchInitialData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lineGroupIdFromUrl])
 
   const fetchInitialData = async () => {

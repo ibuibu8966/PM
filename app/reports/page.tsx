@@ -8,11 +8,9 @@ import { GanttChart } from '@/components/ui/gantt-chart'
 import {
   BarChart,
   PieChart,
-  Calendar,
   TrendingUp,
   Users,
   CheckCircle,
-  Clock,
   AlertTriangle
 } from 'lucide-react'
 
@@ -30,6 +28,7 @@ export default function ReportsPage() {
 
   useEffect(() => {
     fetchData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchData = async () => {
@@ -58,7 +57,6 @@ export default function ReportsPage() {
   const completedProjects = projects.filter(p => p.status === 'completed').length
   const inProgressProjects = projects.filter(p => p.status === 'in_progress').length
   const completedTasks = tasks.filter(t => t.status === 'completed').length
-  const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length
 
   const now = new Date()
   const overdueTasks = tasks.filter(t =>

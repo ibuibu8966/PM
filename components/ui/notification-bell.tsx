@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Bell, Check, Clock, AlertCircle, MessageSquare, TrendingUp, Calendar } from 'lucide-react'
+import { Bell, Clock, AlertCircle, MessageSquare, TrendingUp, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { createClient } from '@/lib/supabase/client'
-import { Notification } from '@/lib/types/database'
+import type { Notification } from '@/lib/types/database'
 import { formatDistanceToNow } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
@@ -36,7 +36,7 @@ export function NotificationBell() {
         event: 'INSERT',
         schema: 'public',
         table: 'notifications'
-      }, (payload) => {
+      }, (payload: { new: Notification }) => {
         const newNotification = payload.new as Notification
         setNotifications(prev => [newNotification, ...prev])
         setUnreadCount(prev => prev + 1)
@@ -54,6 +54,7 @@ export function NotificationBell() {
     return () => {
       supabase.removeChannel(channel)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchNotifications = async () => {
@@ -67,7 +68,7 @@ export function NotificationBell() {
       if (error) throw error
       
       setNotifications(data || [])
-      setUnreadCount(data?.filter(n => !n.is_read).length || 0)
+      setUnreadCount(data?.filter((n: Notification) => !n.is_read).length || 0)
     } catch (error) {
       console.error('通知取得エラー:', error)
     }

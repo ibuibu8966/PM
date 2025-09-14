@@ -1,18 +1,18 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Bell, Check, Clock, AlertCircle, MessageSquare, TrendingUp, Calendar, Filter, CheckCheck } from 'lucide-react'
+import { Bell, Check, Clock, AlertCircle, MessageSquare, TrendingUp, Calendar, CheckCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { createClient } from '@/lib/supabase/client'
-import { Notification } from '@/lib/types/database'
-import { formatDistanceToNow, format } from 'date-fns'
+import type { Notification } from '@/lib/types/database'
+import { formatDistanceToNow } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 export default function NotificationsPage() {
@@ -41,6 +41,7 @@ export default function NotificationsPage() {
     return () => {
       supabase.removeChannel(channel)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchNotifications = async () => {
