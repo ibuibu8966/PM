@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   Home,
@@ -11,22 +11,13 @@ import {
   MessageSquare,
   Menu,
   X,
-  UserCheck,
-  LogOut
+  UserCheck
 } from 'lucide-react'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 
 export default function Navigation() {
   const pathname = usePathname()
-  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
-
-  const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/auth/login')
-  }
 
   const navItems = [
     { href: '/dashboard', label: 'ダッシュボード', icon: Home },
@@ -67,15 +58,6 @@ export default function Navigation() {
             })}
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLogout}
-          className="gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          ログアウト
-        </Button>
       </nav>
 
       {/* モバイルナビゲーション */}
@@ -92,7 +74,7 @@ export default function Navigation() {
             {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
-        
+
         {isOpen && (
           <div className="absolute top-14 left-0 right-0 z-50 bg-background border-b shadow-lg">
             <div className="flex flex-col p-4 gap-2">
@@ -112,15 +94,6 @@ export default function Navigation() {
                   </Link>
                 )
               })}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 mt-2 border-t pt-2"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4" />
-                ログアウト
-              </Button>
             </div>
           </div>
         )}
@@ -132,8 +105,8 @@ export default function Navigation() {
           {navItems.map((item) => {
             const Icon = item.icon
             return (
-              <Link 
-                key={item.href} 
+              <Link
+                key={item.href}
                 href={item.href}
                 className={`flex items-center justify-center h-full w-full transition-colors ${
                   isActive(item.href) ? 'text-primary' : 'text-muted-foreground'
