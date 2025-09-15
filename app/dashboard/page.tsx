@@ -312,11 +312,11 @@ export default function DashboardPage() {
   const completedTodayTasks = todayTasks.filter(task => task.status === 'completed').length
 
   return (
-    <div className="container mx-auto p-4 md:p-6 max-w-7xl">
+    <div className="container mx-auto p-2 md:p-3 max-w-7xl">
       <div className="mb-4 md:mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div>
-            <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-lg md:text-xl font-bold mb-1 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
               ダッシュボード
             </h1>
             <p className="text-xs md:text-base text-muted-foreground">今日やるべきことを一目で確認</p>
@@ -335,46 +335,46 @@ export default function DashboardPage() {
       </div>
 
       {/* 統計カード */}
-      <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4 mb-4 md:mb-6">
+      <div className="grid gap-2 md:gap-3 grid-cols-2 md:grid-cols-4 mb-3 md:mb-4">
         <Card className="border-l-4 border-l-red-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/tasks?filter=overdue'}>
-          <CardContent className="p-3 md:p-4">
+          <CardContent className="p-2 md:p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] md:text-sm text-muted-foreground">期限切れ</p>
-                <p className="text-2xl md:text-3xl font-bold">{todayOverdueTasks}</p>
+                <p className="text-lg md:text-xl font-bold">{todayOverdueTasks}</p>
               </div>
               <Clock className="h-8 md:h-10 w-8 md:w-10 text-red-500 opacity-60" />
             </div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/tasks?filter=high-priority'}>
-          <CardContent className="p-3 md:p-4">
+          <CardContent className="p-2 md:p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] md:text-sm text-muted-foreground">高優先度</p>
-                <p className="text-2xl md:text-3xl font-bold">{highPriorityTasks}</p>
+                <p className="text-lg md:text-xl font-bold">{highPriorityTasks}</p>
               </div>
               <TrendingUp className="h-8 md:h-10 w-8 md:w-10 text-orange-500 opacity-60" />
             </div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/tasks?filter=today'}>
-          <CardContent className="p-3 md:p-4">
+          <CardContent className="p-2 md:p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] md:text-sm text-muted-foreground">本日タスク</p>
-                <p className="text-2xl md:text-3xl font-bold">{todayTasks.length}</p>
+                <p className="text-lg md:text-xl font-bold">{todayTasks.length}</p>
               </div>
               <Target className="h-8 md:h-10 w-8 md:w-10 text-blue-500 opacity-60" />
             </div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/projects?filter=in-progress'}>
-          <CardContent className="p-3 md:p-4">
+          <CardContent className="p-2 md:p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] md:text-sm text-muted-foreground">進行中</p>
-                <p className="text-2xl md:text-3xl font-bold">{inProgressProjects}</p>
+                <p className="text-lg md:text-xl font-bold">{inProgressProjects}</p>
               </div>
               <FolderOpen className="h-8 md:h-10 w-8 md:w-10 text-green-500 opacity-60" />
             </div>
@@ -385,9 +385,9 @@ export default function DashboardPage() {
       {/* 担当者別サマリー */}
       {assigneeStats.length > 0 && (
         <Card className="mb-4 md:mb-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950 dark:to-teal-950 p-4 md:p-6">
+          <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950 dark:to-teal-950 p-2 md:p-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <CardTitle className="flex items-center gap-2 text-sm md:text-base">
                 <Users className="h-4 md:h-5 w-4 md:w-5 text-green-600" />
                 担当者別タスク状況
               </CardTitle>
@@ -402,7 +402,7 @@ export default function DashboardPage() {
               </Link>
             </div>
           </CardHeader>
-          <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
+          <CardContent className="pt-2 md:pt-3 px-2 md:px-3">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {assigneeStats.map(stat => (
                 <div
@@ -436,12 +436,12 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:gap-6 md:grid-cols-2">
+      <div className="grid gap-3 md:gap-4 md:grid-cols-2">
         {/* 今日のタスク */}
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 p-4 md:p-6">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 p-2 md:p-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <CardTitle className="flex items-center gap-2 text-sm md:text-base">
                 <AlertCircle className="h-4 md:h-5 w-4 md:w-5 text-blue-600" />
                 <span className="hidden md:inline">今日のタスク</span>
                 <span className="md:hidden">タスク</span>
@@ -458,7 +458,7 @@ export default function DashboardPage() {
               </Link>
             </div>
           </CardHeader>
-          <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
+          <CardContent className="pt-2 md:pt-3 px-2 md:px-3">
             <div className="space-y-3">
               {todayTasks.length === 0 ? (
                 <div className="text-center py-8">
@@ -470,7 +470,7 @@ export default function DashboardPage() {
                   const isOverdue = task.deadline && new Date(task.deadline) < now
                   return (
                     <Link key={task.id} href={`/tasks/${task.id}`}>
-                      <div className={`group p-3 md:p-4 border rounded-lg md:rounded-xl hover:border-primary hover:bg-primary/5 cursor-pointer transition-all duration-200 ${
+                      <div className={`group p-2 md:p-3border rounded-lg md:rounded-xl hover:border-primary hover:bg-primary/5 cursor-pointer transition-all duration-200 ${
                         isOverdue ? 'border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20' : ''
                       }`}>
                         <div className="flex items-start justify-between mb-2">
@@ -502,9 +502,9 @@ export default function DashboardPage() {
 
         {/* プロジェクト一覧 */}
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 p-4 md:p-6">
+          <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 p-2 md:p-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <CardTitle className="flex items-center gap-2 text-sm md:text-base">
                 <FolderOpen className="h-4 md:h-5 w-4 md:w-5 text-purple-600" />
                 <span className="hidden md:inline">アクティブプロジェクト</span>
                 <span className="md:hidden">プロジェクト</span>
@@ -521,7 +521,7 @@ export default function DashboardPage() {
               </Link>
             </div>
           </CardHeader>
-          <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
+          <CardContent className="pt-2 md:pt-3 px-2 md:px-3">
             <div className="space-y-3">
               {projects.length === 0 ? (
                 <div className="text-center py-8">
@@ -531,7 +531,7 @@ export default function DashboardPage() {
               ) : (
                 projects.slice(0, 5).map((project) => (
                   <Link key={project.id} href={`/projects/${project.id}`}>
-                    <div className="group p-3 md:p-4 border rounded-lg md:rounded-xl hover:border-primary hover:bg-primary/5 cursor-pointer transition-all duration-200">
+                    <div className="group p-2 md:p-3border rounded-lg md:rounded-xl hover:border-primary hover:bg-primary/5 cursor-pointer transition-all duration-200">
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-semibold text-sm md:text-base group-hover:text-primary transition-colors line-clamp-1">
                           {project.name}
@@ -560,9 +560,9 @@ export default function DashboardPage() {
       {/* 未登録タスク */}
       {unregisteredTasks.length > 0 && (
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 mt-4 md:mt-6">
-          <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 p-4 md:p-6">
+          <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 p-2 md:p-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <CardTitle className="flex items-center gap-2 text-sm md:text-base">
                 <Inbox className="h-4 md:h-5 w-4 md:w-5 text-orange-600" />
                 <span>未登録タスク</span>
                 <span className="text-xs md:text-sm font-normal text-muted-foreground">({unregisteredTasks.length})</span>
@@ -578,12 +578,12 @@ export default function DashboardPage() {
               </Link>
             </div>
           </CardHeader>
-          <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
+          <CardContent className="pt-2 md:pt-3 px-2 md:px-3">
             <div className="space-y-3">
               {unregisteredTasks.slice(0, 10).map((task) => (
                 <div key={task.id} className="border border-orange-200 rounded-lg md:rounded-xl bg-orange-50/50 dark:bg-orange-950/20 overflow-hidden">
                   <div
-                    className="group p-3 md:p-4 cursor-pointer hover:bg-orange-100/50 transition-colors"
+                    className="group p-2 md:p-3cursor-pointer hover:bg-orange-100/50 transition-colors"
                     onClick={() => toggleTask(task.id)}
                   >
                     <div className="flex items-start justify-between">
@@ -635,8 +635,8 @@ export default function DashboardPage() {
 
                 {/* 展開時のフォーム */}
                 {expandedTasks[task.id] && taskForms[task.id] && (
-                  <div className="p-4 border-t border-orange-200 bg-white dark:bg-gray-900">
-                    <div className="space-y-4">
+                  <div className="p-3 border-t border-orange-200 bg-white dark:bg-gray-900">
+                    <div className="space-y-3">
                       <div>
                         <Label htmlFor={`title-${task.id}`} className="text-sm">タスク名 *</Label>
                         <Input
@@ -676,7 +676,7 @@ export default function DashboardPage() {
                         </Select>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
                           <Label htmlFor={`priority-${task.id}`} className="text-sm">優先度 (0-10)</Label>
                           <Input
@@ -746,15 +746,15 @@ export default function DashboardPage() {
       {completedTodayTasks > 0 && (
         <div className="mt-4 md:mt-6 mb-4 md:mb-6">
           <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200">
-            <CardContent className="p-3 md:p-4">
+            <CardContent className="p-2 md:p-3">
               <div className="flex items-center gap-2 md:gap-3">
                 <CheckSquare className="h-5 md:h-6 w-5 md:w-6 text-green-600 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-xs md:text-sm text-muted-foreground">本日の完了</p>
-                  <p className="text-sm md:text-xl font-bold text-green-700">{completedTodayTasks}/{todayTasks.length}件</p>
+                  <p className="text-xs md:text-sm font-bold text-green-700">{completedTodayTasks}/{todayTasks.length}件</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl md:text-2xl font-bold text-green-700">
+                  <div className="text-base md:text-lg font-bold text-green-700">
                     {todayTasks.length > 0 ? Math.round((completedTodayTasks / todayTasks.length) * 100) : 0}%
                   </div>
                 </div>

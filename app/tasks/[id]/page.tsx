@@ -7,7 +7,8 @@ import { Task, Project, Memo, Proposal } from '@/lib/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
+import { RichTextViewer } from '@/components/ui/rich-text-viewer'
 import { Label } from '@/components/ui/label'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
@@ -324,7 +325,7 @@ export default function TaskDetailPage() {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
-          <CheckSquare className="h-8 w-8 animate-pulse text-primary mx-auto mb-2" />
+          <CheckSquare className="h-5 w-5 animate-pulse text-primary mx-auto mb-2" />
           <p className="text-muted-foreground">読み込み中...</p>
         </div>
       </div>
@@ -333,15 +334,15 @@ export default function TaskDetailPage() {
 
   if (!task) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-3">
         <p>タスクが見つかりません</p>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-6 flex justify-between items-center">
+    <div className="container mx-auto p-3 max-w-7xl">
+      <div className="mb-3 flex justify-between items-center">
         <Link href="/tasks">
           <ActionButton
             icon={<ArrowLeft className="h-4 w-4" />}
@@ -369,17 +370,17 @@ export default function TaskDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-3">
         {/* タスク詳細 */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-3">
           <Card className="shadow-lg">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950">
-              <CardTitle className="flex items-center gap-3 text-2xl">
+              <CardTitle className="flex items-center gap-3 text-base">
                 <CheckSquare className="h-6 w-6 text-blue-600" />
                 {task.title}
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6 space-y-4">
+            <CardContent className="pt-3 space-y-2">
               {task.description && (
                 <div>
                   <Label className="text-muted-foreground mb-2">説明</Label>
@@ -387,7 +388,7 @@ export default function TaskDetailPage() {
                 </div>
               )}
               
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-2 md:grid-cols-2">
                 <div>
                   <Label className="text-muted-foreground mb-2">ステータス</Label>
                   <InlineStatusSelect 
@@ -404,7 +405,7 @@ export default function TaskDetailPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-2 md:grid-cols-2">
                 {task.deadline && (
                   <div>
                     <Label className="text-muted-foreground mb-2 flex items-center gap-1">
@@ -448,11 +449,11 @@ export default function TaskDetailPage() {
                 )}
               </div>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-3">
               {/* 新規提案追加フォーム */}
               {isAddingProposal && (
-                <Card className="mb-4 border-2 border-primary">
-                  <CardContent className="pt-4">
+                <Card className="mb-2 border-2 border-primary">
+                  <CardContent className="pt-2">
                     <div className="space-y-3">
                       <div>
                         <Label htmlFor="new-title">タイトル *</Label>
@@ -465,22 +466,18 @@ export default function TaskDetailPage() {
                       </div>
                       <div>
                         <Label htmlFor="new-content">内容 *</Label>
-                        <Textarea
-                          id="new-content"
-                          value={proposalForm.content}
-                          onChange={(e) => setProposalForm({ ...proposalForm, content: e.target.value })}
+                        <RichTextEditor
+                          content={proposalForm.content}
+                          onChange={(value) => setProposalForm({ ...proposalForm, content: value })}
                           placeholder="提案の詳細内容"
-                          className="min-h-[100px]"
                         />
                       </div>
                       <div>
                         <Label htmlFor="new-reason">理由</Label>
-                        <Textarea
-                          id="new-reason"
-                          value={proposalForm.reason}
-                          onChange={(e) => setProposalForm({ ...proposalForm, reason: e.target.value })}
+                        <RichTextEditor
+                          content={proposalForm.reason}
+                          onChange={(value) => setProposalForm({ ...proposalForm, reason: value })}
                           placeholder="なぜこの案を考えたか"
-                          className="min-h-[80px]"
                         />
                       </div>
                       <div className="flex gap-2">
@@ -515,7 +512,7 @@ export default function TaskDetailPage() {
                   proposals.map((proposal) => (
                     <div key={proposal.id} className="border rounded-lg">
                       {editingProposalId === proposal.id ? (
-                        <div className="p-4 space-y-3">
+                        <div className="p-2 space-y-3">
                           <div>
                             <Label htmlFor={`edit-title-${proposal.id}`}>タイトル *</Label>
                             <Input
@@ -526,20 +523,16 @@ export default function TaskDetailPage() {
                           </div>
                           <div>
                             <Label htmlFor={`edit-content-${proposal.id}`}>内容 *</Label>
-                            <Textarea
-                              id={`edit-content-${proposal.id}`}
-                              value={proposalForm.content}
-                              onChange={(e) => setProposalForm({ ...proposalForm, content: e.target.value })}
-                              className="min-h-[100px]"
+                            <RichTextEditor
+                              content={proposalForm.content}
+                              onChange={(value) => setProposalForm({ ...proposalForm, content: value })}
                             />
                           </div>
                           <div>
                             <Label htmlFor={`edit-reason-${proposal.id}`}>理由</Label>
-                            <Textarea
-                              id={`edit-reason-${proposal.id}`}
-                              value={proposalForm.reason}
-                              onChange={(e) => setProposalForm({ ...proposalForm, reason: e.target.value })}
-                              className="min-h-[80px]"
+                            <RichTextEditor
+                              content={proposalForm.reason}
+                              onChange={(value) => setProposalForm({ ...proposalForm, reason: value })}
                             />
                           </div>
                           <div className="flex gap-2">
@@ -565,7 +558,7 @@ export default function TaskDetailPage() {
                         <>
                           <button
                             onClick={() => toggleProposal(proposal.id)}
-                            className="w-full p-4 flex items-center justify-between hover:bg-accent/50 transition-colors"
+                            className="w-full p-2 flex items-center justify-between hover:bg-accent/50 transition-colors"
                           >
                             <div className="flex items-center gap-3">
                               {expandedProposals.has(proposal.id) ? (
@@ -602,15 +595,15 @@ export default function TaskDetailPage() {
                             </div>
                           </button>
                           {expandedProposals.has(proposal.id) && (
-                            <div className="px-4 pb-4 pt-0 space-y-3">
+                            <div className="px-2 pb-4 pt-0 space-y-3">
                               <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                                <p className="text-sm font-medium mb-1">内容:</p>
-                                <p className="text-sm whitespace-pre-wrap">{proposal.content}</p>
+                                <p className="text-sm font-medium mb-2">内容:</p>
+                                <RichTextViewer content={proposal.content} className="text-sm" />
                               </div>
                               {proposal.reason && (
                                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                                  <p className="text-sm font-medium mb-1">理由:</p>
-                                  <p className="text-sm whitespace-pre-wrap">{proposal.reason}</p>
+                                  <p className="text-sm font-medium mb-2">理由:</p>
+                                  <RichTextViewer content={proposal.reason} className="text-sm" />
                                 </div>
                               )}
                             </div>
@@ -641,17 +634,16 @@ export default function TaskDetailPage() {
                 />
               </div>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-3">
               {/* 新規メモ追加フォーム */}
               {isAddingMemo && (
-                <Card className="mb-4 border-2 border-primary">
-                  <CardContent className="pt-4">
-                    <Textarea
+                <Card className="mb-2 border-2 border-primary">
+                  <CardContent className="pt-2">
+                    <RichTextEditor
+                      content={newMemoContent}
+                      onChange={setNewMemoContent}
                       placeholder="メモを入力..."
-                      value={newMemoContent}
-                      onChange={(e) => setNewMemoContent(e.target.value)}
-                      className="min-h-[100px] mb-3"
-                      autoFocus
+                      className="mb-3"
                     />
                     <div className="flex gap-2">
                       <Button onClick={handleAddMemo} size="sm" className="flex-1">
@@ -684,14 +676,13 @@ export default function TaskDetailPage() {
                 ) : (
                   memos.map((memo) => (
                     <Card key={memo.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="pt-4">
+                      <CardContent className="pt-2">
                         {editingMemoId === memo.id ? (
                           <div>
-                            <Textarea
-                              value={editingMemoContent}
-                              onChange={(e) => setEditingMemoContent(e.target.value)}
-                              className="min-h-[100px] mb-3"
-                              autoFocus
+                            <RichTextEditor
+                              content={editingMemoContent}
+                              onChange={setEditingMemoContent}
+                              className="mb-3"
                             />
                             <div className="flex gap-2">
                               <Button 
@@ -742,14 +733,14 @@ export default function TaskDetailPage() {
                                 </Button>
                               </div>
                             </div>
-                            <div 
-                              className={`text-sm whitespace-pre-wrap ${
-                                !expandedMemos.has(memo.id) && memo.content.length > 200 
-                                  ? 'line-clamp-3' 
+                            <div
+                              className={`text-sm ${
+                                !expandedMemos.has(memo.id) && memo.content.length > 200
+                                  ? 'line-clamp-3'
                                   : ''
                               }`}
                             >
-                              {memo.content}
+                              <RichTextViewer content={memo.content} />
                             </div>
                             {memo.content.length > 200 && (
                               <Button
@@ -783,7 +774,7 @@ export default function TaskDetailPage() {
         </div>
 
         {/* サイドバー */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* プロジェクト情報 */}
           {project && (
             <Card className="shadow-lg">
@@ -793,7 +784,7 @@ export default function TaskDetailPage() {
                   所属プロジェクト
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent className="pt-2">
                 <Link href={`/projects/${project.id}`}>
                   <div className="p-3 border-2 rounded-lg hover:border-primary hover:bg-primary/5 cursor-pointer transition-all">
                     <h4 className="font-semibold mb-2">{project.name}</h4>

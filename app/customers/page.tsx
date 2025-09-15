@@ -111,10 +111,10 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 max-w-6xl">
-      <div className="mb-4 md:mb-8 flex justify-between items-center">
+    <div className="container mx-auto p-2 md:p-3 max-w-6xl">
+      <div className="mb-2 md:mb-2 flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold mb-2">顧客管理</h1>
+          <h1 className="text-lg font-bold mb-2">顧客管理</h1>
           <p className="text-muted-foreground">顧客情報を管理</p>
         </div>
         <Button onClick={() => setIsAddDialogOpen(true)}>
@@ -124,8 +124,8 @@ export default function CustomersPage() {
       </div>
 
       {/* 検索バー */}
-      <Card className="mb-4 md:mb-6">
-        <CardContent className="pt-6">
+      <Card className="mb-2 md:mb-3">
+        <CardContent className="pt-3">
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -151,7 +151,7 @@ export default function CustomersPage() {
         ) : (
           filteredCustomers.map((customer) => (
             <Card key={customer.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="p-4">
+              <CardHeader className="p-2">
                 <div className="flex justify-between items-start">
                   <Link href={`/customers/${customer.id}`} className="flex-1">
                     <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
@@ -181,7 +181,7 @@ export default function CustomersPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0 px-4 pb-4">
+              <CardContent className="pt-0 px-2 pb-4">
                 <p className="text-xs text-muted-foreground">
                   {new Date(customer.created_at).toLocaleDateString('ja-JP')}
                 </p>
@@ -211,7 +211,7 @@ export default function CustomersPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div>
                   <Label htmlFor="customerName">顧客名</Label>
                   <Input
@@ -263,7 +263,7 @@ export default function CustomersPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div>
                   <Label htmlFor="editCustomerName">顧客名</Label>
                   <Input

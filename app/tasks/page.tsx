@@ -4,14 +4,13 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Task, Project } from '@/lib/types/database'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
-import { InlineStatusSelect } from '@/components/ui/inline-status-select'
-import { InlinePrioritySelect } from '@/components/ui/inline-priority-select'
+import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { ActionButton } from '@/components/ui/action-button'
-import { Plus, Search, Calendar, Filter, CheckSquare, FolderOpen, ArrowRight, Edit, ArrowUp, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Search, Calendar, Filter, CheckSquare, FolderOpen, ArrowUp, ChevronDown, ChevronUp, User, Edit2 } from 'lucide-react'
 import Link from 'next/link'
 
 type Assignee = {
@@ -59,39 +58,6 @@ export default function TasksPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
-  const updateTaskStatus = async (taskId: string, newStatus: StatusType) => {
-    const { error } = await supabase
-      .from('tasks')
-      .update({ status: newStatus })
-      .eq('id', taskId)
-
-    if (error) {
-      console.error('ステータス更新エラー:', error)
-      throw error
-    }
-
-    // ローカルステートを更新
-    setTasks(prev => prev.map(t => 
-      t.id === taskId ? { ...t, status: newStatus } : t
-    ))
-  }
-
-  const updateTaskPriority = async (taskId: string, newPriority: number) => {
-    const { error } = await supabase
-      .from('tasks')
-      .update({ priority: newPriority })
-      .eq('id', taskId)
-
-    if (error) {
-      console.error('優先度更新エラー:', error)
-      throw error
-    }
-
-    // ローカルステートを更新
-    setTasks(prev => prev.map(t => 
-      t.id === taskId ? { ...t, priority: newPriority } : t
-    ))
-  }
 
   const fetchData = async () => {
     try {
@@ -193,7 +159,7 @@ export default function TasksPage() {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
-          <CheckSquare className="h-8 w-8 animate-pulse text-primary mx-auto mb-2" />
+          <CheckSquare className="h-5 w-5 animate-pulse text-primary mx-auto mb-2" />
           <p className="text-muted-foreground">読み込み中...</p>
         </div>
       </div>
@@ -201,10 +167,10 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 max-w-7xl">
-      <div className="mb-4 md:mb-8 flex justify-between items-center">
+    <div className="container mx-auto p-2 md:p-3 max-w-7xl">
+      <div className="mb-2 md:mb-2 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+          <h1 className="text-base md:text-xl font-bold mb-1 md:mb-2 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
             タスク一覧
           </h1>
           <p className="text-sm md:text-base text-muted-foreground">すべてのタスクを管理</p>
@@ -220,7 +186,7 @@ export default function TasksPage() {
       </div>
 
       {/* フィルター - モバイル向け統合トグル */}
-      <div className="mb-4 md:hidden relative">
+      <div className="mb-2 md:hidden relative">
         <Button
           onClick={() => setShowFilters(!showFilters)}
           variant="outline"
@@ -316,7 +282,7 @@ export default function TasksPage() {
       </div>
 
       {/* デスクトップ用フィルター */}
-      <div className="hidden md:block mb-4 space-y-3">
+      <div className="hidden md:block mb-2 space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -378,7 +344,7 @@ export default function TasksPage() {
       </div>
 
       {/* タスクリスト */}
-      <div className="grid gap-4">
+      <div className="grid gap-2">
         {filteredTasks.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
@@ -387,73 +353,52 @@ export default function TasksPage() {
           </Card>
         ) : (
           filteredTasks.map((task) => (
-            <Card key={task.id} className="hover:shadow-lg transition-all duration-300 border hover:border-primary/30">
-              <CardContent className="p-4 md:p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <Link href={`/tasks/${task.id}`}>
-                      <h3 className="text-lg md:text-xl font-bold hover:text-primary cursor-pointer transition-colors flex items-center gap-2">
-                        <CheckSquare className="h-4 md:h-5 w-4 md:w-5 text-blue-600 flex-shrink-0" />
-                        <span className="line-clamp-2">{task.title}</span>
-                      </h3>
+            <Card key={task.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader className="p-2">
+                <div className="flex justify-between items-start">
+                  <Link href={`/tasks/${task.id}`} className="flex-1">
+                    <div className="flex items-start gap-2">
+                      <CheckSquare className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
+                        {task.title}
+                      </CardTitle>
+                    </div>
+                  </Link>
+                  <div className="flex items-center gap-1 ml-2">
+                    <StatusBadge status={task.status as StatusType} size="sm" />
+                    <Link href={`/tasks/${task.id}/edit`}>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
                     </Link>
-                    <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-3 md:mt-4 pl-6 md:pl-7">
-                      <InlinePrioritySelect 
-                        value={task.priority} 
-                        onChange={(priority) => updateTaskPriority(task.id, priority)}
-                      />
-                      {task.deadline && (
-                        <span className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(task.deadline).toLocaleDateString('ja-JP')}
-                        </span>
-                      )}
-                      {projects[task.project_id] && (
-                        <Link href={`/projects/${task.project_id}`}>
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md text-xs font-medium transition-colors cursor-pointer">
-                            <FolderOpen className="h-3 w-3" />
-                            {projects[task.project_id].name}
-                          </span>
-                        </Link>
-                      )}
-                      {task.assignee && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-md text-xs font-medium">
-                          {task.assignee.name}
-                        </span>
-                      )}
-                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <div className="hidden md:block">
-                      <InlineStatusSelect 
-                        value={task.status as StatusType} 
-                        onChange={(status) => updateTaskStatus(task.id, status)}
-                      />
-                    </div>
-                    <div className="md:hidden">
-                      <StatusBadge status={task.status} size="sm" />
-                    </div>
-                    <div className="hidden md:flex gap-2">
-                      <Link href={`/tasks/${task.id}`}>
-                        <ActionButton
-                          icon={<ArrowRight className="h-4 w-4" />}
-                          label="詳細"
-                          variant="ghost"
-                          size="sm"
-                          tooltip="タスク詳細を表示"
-                        />
-                      </Link>
-                      <Link href={`/tasks/${task.id}/edit`}>
-                        <ActionButton
-                          icon={<Edit className="h-4 w-4" />}
-                          label="編集"
-                          variant="outline"
-                          size="sm"
-                          tooltip="タスクを編集"
-                        />
-                      </Link>
-                    </div>
-                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0 px-2 pb-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <PriorityIndicator priority={task.priority} size="sm" showLabel={false} />
+                  {task.deadline && (
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(task.deadline).toLocaleDateString('ja-JP')}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {projects[task.project_id] && (
+                    <Link href={`/projects/${task.project_id}`}>
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded text-2xs transition-colors cursor-pointer">
+                        <FolderOpen className="h-2.5 w-2.5" />
+                        {projects[task.project_id].name}
+                      </span>
+                    </Link>
+                  )}
+                  {task.assignee && (
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-green-50 text-green-700 rounded text-2xs">
+                      <User className="h-2.5 w-2.5" />
+                      {task.assignee.name}
+                    </span>
+                  )}
                 </div>
               </CardContent>
             </Card>

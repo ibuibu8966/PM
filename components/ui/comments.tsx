@@ -63,11 +63,31 @@ export function Comments({ projectId, taskId }: CommentsProps) {
 
       const { data, error } = await query
 
-      if (error) throw error
-      setComments(data || [])
+      if (error) {
+        console.error('コメント取得エラー詳細:', {
+          error,
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        })
+
+        // テーブルが存在しない場合のメッセージ
+        if (error.code === '42P01' || error.message?.includes('relation "comments" does not exist')) {
+          showToast('コメント機能の初期化が必要です。管理者にお問い合わせください。', 'error')
+        } else {
+          showToast(`コメントの取得に失敗しました: ${error.message}`, 'error')
+        }
+
+        // エラーでも空の配列を設定してUIを表示
+        setComments([])
+      } else {
+        setComments(data || [])
+      }
     } catch (error) {
-      console.error('コメント取得エラー:', error)
-      showToast('コメントの取得に失敗しました', 'error')
+      console.error('予期しないエラー:', error)
+      showToast('予期しないエラーが発生しました', 'error')
+      setComments([])
     } finally {
       setLoading(false)
     }

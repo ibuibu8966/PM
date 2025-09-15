@@ -111,10 +111,10 @@ export default function LineGroupsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      <div className="mb-8 flex justify-between items-center">
+    <div className="container mx-auto p-3 max-w-6xl">
+      <div className="mb-2 flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold mb-2">LINEグループ管理</h1>
+          <h1 className="text-lg font-bold mb-2">LINEグループ管理</h1>
           <p className="text-muted-foreground">LINEグループ情報を管理</p>
         </div>
         <Button onClick={() => setIsAddDialogOpen(true)}>
@@ -124,8 +124,8 @@ export default function LineGroupsPage() {
       </div>
 
       {/* 検索バー */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
+      <Card className="mb-3">
+        <CardContent className="pt-3">
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -151,7 +151,7 @@ export default function LineGroupsPage() {
         ) : (
           filteredLineGroups.map((lineGroup) => (
             <Card key={lineGroup.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="p-4">
+              <CardHeader className="p-2">
                 <div className="flex justify-between items-start">
                   <Link href={`/line-groups/${lineGroup.id}`} className="flex-1">
                     <div className="flex items-start gap-2">
@@ -184,7 +184,7 @@ export default function LineGroupsPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0 px-4 pb-4">
+              <CardContent className="pt-0 px-2 pb-4">
                 <p className="text-xs text-muted-foreground">
                   {new Date(lineGroup.created_at).toLocaleDateString('ja-JP')}
                 </p>
@@ -214,7 +214,7 @@ export default function LineGroupsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div>
                   <Label htmlFor="groupName">グループ名</Label>
                   <Input
@@ -266,7 +266,7 @@ export default function LineGroupsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div>
                   <Label htmlFor="editGroupName">グループ名</Label>
                   <Input

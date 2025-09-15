@@ -4,14 +4,13 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Project, Customer, LineGroup } from '@/lib/types/database'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
-import { InlineStatusSelect } from '@/components/ui/inline-status-select'
-import { InlinePrioritySelect } from '@/components/ui/inline-priority-select'
+import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { ActionButton } from '@/components/ui/action-button'
-import { Plus, Search, Calendar, Users, MessageSquare, FolderOpen, ArrowRight, Edit, Filter, ArrowUp, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Search, Calendar, Users, MessageSquare, FolderOpen, Filter, ArrowUp, ChevronDown, ChevronUp, Edit2 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ProjectsPage() {
@@ -39,39 +38,6 @@ export default function ProjectsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
-  const updateProjectStatus = async (projectId: string, newStatus: StatusType) => {
-    const { error } = await supabase
-      .from('projects')
-      .update({ status: newStatus })
-      .eq('id', projectId)
-
-    if (error) {
-      console.error('ステータス更新エラー:', error)
-      throw error
-    }
-
-    // ローカルステートを更新
-    setProjects(prev => prev.map(p => 
-      p.id === projectId ? { ...p, status: newStatus } : p
-    ))
-  }
-
-  const updateProjectPriority = async (projectId: string, newPriority: number) => {
-    const { error } = await supabase
-      .from('projects')
-      .update({ priority: newPriority })
-      .eq('id', projectId)
-
-    if (error) {
-      console.error('優先度更新エラー:', error)
-      throw error
-    }
-
-    // ローカルステートを更新
-    setProjects(prev => prev.map(p => 
-      p.id === projectId ? { ...p, priority: newPriority } : p
-    ))
-  }
 
   const fetchData = async () => {
     try {
@@ -150,7 +116,7 @@ export default function ProjectsPage() {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
-          <FolderOpen className="h-8 w-8 animate-pulse text-primary mx-auto mb-2" />
+          <FolderOpen className="h-5 w-5 animate-pulse text-primary mx-auto mb-2" />
           <p className="text-muted-foreground">読み込み中...</p>
         </div>
       </div>
@@ -158,10 +124,10 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 max-w-7xl">
-      <div className="mb-4 md:mb-8 flex justify-between items-center">
+    <div className="container mx-auto p-2 md:p-3 max-w-7xl">
+      <div className="mb-2 md:mb-2 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-base md:text-xl font-bold mb-1 md:mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             プロジェクト一覧
           </h1>
           <p className="text-sm md:text-base text-muted-foreground">すべてのプロジェクトを管理</p>
@@ -177,7 +143,7 @@ export default function ProjectsPage() {
       </div>
 
       {/* フィルター - モバイル向け統合トグル */}
-      <div className="mb-4 md:hidden relative">
+      <div className="mb-2 md:hidden relative">
         <Button
           onClick={() => setShowFilters(!showFilters)}
           variant="outline"
@@ -273,7 +239,7 @@ export default function ProjectsPage() {
       </div>
 
       {/* デスクトップ用フィルター */}
-      <div className="hidden md:block mb-4 space-y-3">
+      <div className="hidden md:block mb-2 space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -335,7 +301,7 @@ export default function ProjectsPage() {
       </div>
 
       {/* プロジェクトリスト */}
-      <div className="grid gap-4">
+      <div className="grid gap-2">
         {filteredProjects.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
@@ -344,89 +310,59 @@ export default function ProjectsPage() {
           </Card>
         ) : (
           filteredProjects.map((project) => (
-            <Card key={project.id} className="hover:shadow-lg transition-all duration-300 border hover:border-primary/30">
-              <CardContent className="p-4 md:p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <Link href={`/projects/${project.id}`}>
-                      <h3 className="text-lg md:text-xl font-bold hover:text-primary cursor-pointer transition-colors flex items-center gap-2">
-                        <FolderOpen className="h-4 md:h-5 w-4 md:w-5 text-purple-600 flex-shrink-0" />
-                        <span className="line-clamp-2">{project.name}</span>
-                      </h3>
+            <Card key={project.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader className="p-2">
+                <div className="flex justify-between items-start">
+                  <Link href={`/projects/${project.id}`} className="flex-1">
+                    <div className="flex items-start gap-2">
+                      <FolderOpen className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                      <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
+                        {project.name}
+                      </CardTitle>
+                    </div>
+                  </Link>
+                  <div className="flex items-center gap-1 ml-2">
+                    <StatusBadge status={project.status as StatusType} size="sm" />
+                    <Link href={`/projects/${project.id}/edit`}>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
                     </Link>
-                    <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-3 md:mt-4 pl-6 md:pl-7">
-                      <InlinePrioritySelect 
-                        value={project.priority} 
-                        onChange={(priority) => updateProjectPriority(project.id, priority)}
-                      />
-                      {project.deadline && (
-                        <span className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(project.deadline).toLocaleDateString('ja-JP')}
-                        </span>
-                      )}
-                    </div>
-                    
-                    {/* 関連情報 - クリック可能に */}
-                    <div className="flex flex-wrap gap-2 mt-2 md:mt-3 pl-6 md:pl-7">
-                      {projectRelations[project.id]?.customers.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {projectRelations[project.id].customers.map(customer => (
-                            <Link key={customer.id} href={`/customers/${customer.id}`}>
-                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-xs font-medium transition-colors cursor-pointer">
-                                <Users className="h-3 w-3" />
-                                {customer.name}
-                              </span>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                      {projectRelations[project.id]?.lineGroups.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {projectRelations[project.id].lineGroups.map(lineGroup => (
-                            <Link key={lineGroup.id} href={`/line-groups/${lineGroup.id}`}>
-                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 hover:bg-green-100 text-green-700 rounded-md text-xs font-medium transition-colors cursor-pointer">
-                                <MessageSquare className="h-3 w-3" />
-                                {lineGroup.name}
-                              </span>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <div className="hidden md:block">
-                      <InlineStatusSelect 
-                        value={project.status as StatusType} 
-                        onChange={(status) => updateProjectStatus(project.id, status)}
-                      />
-                    </div>
-                    <div className="md:hidden">
-                      <StatusBadge status={project.status} size="sm" />
-                    </div>
-                    <div className="hidden md:flex gap-2">
-                      <Link href={`/projects/${project.id}`}>
-                        <ActionButton
-                          icon={<ArrowRight className="h-4 w-4" />}
-                          label="詳細"
-                          variant="ghost"
-                          size="sm"
-                          tooltip="プロジェクト詳細を表示"
-                        />
-                      </Link>
-                      <Link href={`/projects/${project.id}/edit`}>
-                        <ActionButton
-                          icon={<Edit className="h-4 w-4" />}
-                          label="編集"
-                          variant="outline"
-                          size="sm"
-                          tooltip="プロジェクトを編集"
-                        />
-                      </Link>
-                    </div>
                   </div>
                 </div>
+              </CardHeader>
+              <CardContent className="pt-0 px-2 pb-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <PriorityIndicator priority={project.priority} size="sm" showLabel={false} />
+                  {project.deadline && (
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(project.deadline).toLocaleDateString('ja-JP')}
+                    </span>
+                  )}
+                </div>
+                {/* 関連情報 */}
+                {(projectRelations[project.id]?.customers.length > 0 ||
+                  projectRelations[project.id]?.lineGroups.length > 0) && (
+                  <div className="flex flex-wrap gap-1">
+                    {projectRelations[project.id]?.customers.slice(0, 2).map(customer => (
+                      <span key={customer.id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-2xs">
+                        <Users className="h-2.5 w-2.5" />
+                        {customer.name}
+                      </span>
+                    ))}
+                    {projectRelations[project.id]?.lineGroups.slice(0, 2).map(lineGroup => (
+                      <span key={lineGroup.id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-green-50 text-green-700 rounded text-2xs">
+                        <MessageSquare className="h-2.5 w-2.5" />
+                        {lineGroup.name}
+                      </span>
+                    ))}
+                    {((projectRelations[project.id]?.customers.length > 2) ||
+                      (projectRelations[project.id]?.lineGroups.length > 2)) && (
+                      <span className="text-2xs text-muted-foreground">...</span>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))

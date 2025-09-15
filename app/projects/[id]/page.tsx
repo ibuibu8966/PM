@@ -7,7 +7,8 @@ import { Project, Task, Customer, LineGroup, Proposal, Memo, Attachment } from '
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
+import { RichTextViewer } from '@/components/ui/rich-text-viewer'
 import { Label } from '@/components/ui/label'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
@@ -360,7 +361,7 @@ export default function ProjectDetailPage() {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
-          <FolderOpen className="h-8 w-8 animate-pulse text-primary mx-auto mb-2" />
+          <FolderOpen className="h-5 w-5 animate-pulse text-primary mx-auto mb-2" />
           <p className="text-muted-foreground">読み込み中...</p>
         </div>
       </div>
@@ -369,15 +370,15 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-3">
         <p>プロジェクトが見つかりません</p>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 max-w-7xl">
-      <div className="mb-4 md:mb-6">
+    <div className="container mx-auto p-2 md:p-3 max-w-7xl">
+      <div className="mb-2 md:mb-3">
         <Link href="/projects">
           <ActionButton
             icon={<ArrowLeft className="h-4 w-4" />}
@@ -388,17 +389,17 @@ export default function ProjectDetailPage() {
         </Link>
       </div>
 
-      <div className="mb-4 md:mb-8">
+      <div className="mb-2 md:mb-2">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-              <FolderOpen className="h-8 w-8 text-purple-600" />
+            <h1 className="text-xl font-bold mb-2 flex items-center gap-3">
+              <FolderOpen className="h-5 w-5 text-purple-600" />
               {project.name}
             </h1>
             {project.description && (
-              <p className="text-lg text-muted-foreground mb-4">{project.description}</p>
+              <p className="text-lg text-muted-foreground mb-2">{project.description}</p>
             )}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <InlineStatusSelect 
                 value={project.status as StatusType} 
                 onChange={updateProjectStatus}
@@ -427,7 +428,7 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* 提案セクション */}
-      <Card className="mb-4 md:mb-6 shadow-lg">
+      <Card className="mb-2 md:mb-3 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -445,11 +446,11 @@ export default function ProjectDetailPage() {
             )}
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-3">
           {/* 新規提案追加フォーム */}
           {isAddingProposal && (
-            <Card className="mb-4 border-2 border-primary">
-              <CardContent className="pt-4">
+            <Card className="mb-2 border-2 border-primary">
+              <CardContent className="pt-2">
                 <div className="space-y-3">
                   <div>
                     <Label htmlFor="new-title">タイトル *</Label>
@@ -462,22 +463,18 @@ export default function ProjectDetailPage() {
                   </div>
                   <div>
                     <Label htmlFor="new-content">内容 *</Label>
-                    <Textarea
-                      id="new-content"
-                      value={proposalForm.content}
-                      onChange={(e) => setProposalForm({ ...proposalForm, content: e.target.value })}
+                    <RichTextEditor
+                      content={proposalForm.content}
+                      onChange={(value) => setProposalForm({ ...proposalForm, content: value })}
                       placeholder="提案の詳細内容"
-                      className="min-h-[100px]"
                     />
                   </div>
                   <div>
                     <Label htmlFor="new-reason">理由</Label>
-                    <Textarea
-                      id="new-reason"
-                      value={proposalForm.reason}
-                      onChange={(e) => setProposalForm({ ...proposalForm, reason: e.target.value })}
+                    <RichTextEditor
+                      content={proposalForm.reason}
+                      onChange={(value) => setProposalForm({ ...proposalForm, reason: value })}
                       placeholder="なぜこの案を考えたか"
-                      className="min-h-[80px]"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -512,7 +509,7 @@ export default function ProjectDetailPage() {
               proposals.map((proposal) => (
                 <div key={proposal.id} className="border rounded-lg">
                   {editingProposalId === proposal.id ? (
-                    <div className="p-4 space-y-3">
+                    <div className="p-2 space-y-3">
                       <div>
                         <Label htmlFor={`edit-title-${proposal.id}`}>タイトル *</Label>
                         <Input
@@ -523,20 +520,16 @@ export default function ProjectDetailPage() {
                       </div>
                       <div>
                         <Label htmlFor={`edit-content-${proposal.id}`}>内容 *</Label>
-                        <Textarea
-                          id={`edit-content-${proposal.id}`}
-                          value={proposalForm.content}
-                          onChange={(e) => setProposalForm({ ...proposalForm, content: e.target.value })}
-                          className="min-h-[100px]"
+                        <RichTextEditor
+                          content={proposalForm.content}
+                          onChange={(value) => setProposalForm({ ...proposalForm, content: value })}
                         />
                       </div>
                       <div>
                         <Label htmlFor={`edit-reason-${proposal.id}`}>理由</Label>
-                        <Textarea
-                          id={`edit-reason-${proposal.id}`}
-                          value={proposalForm.reason}
-                          onChange={(e) => setProposalForm({ ...proposalForm, reason: e.target.value })}
-                          className="min-h-[80px]"
+                        <RichTextEditor
+                          content={proposalForm.reason}
+                          onChange={(value) => setProposalForm({ ...proposalForm, reason: value })}
                         />
                       </div>
                       <div className="flex gap-2">
@@ -562,7 +555,7 @@ export default function ProjectDetailPage() {
                     <>
                       <button
                         onClick={() => toggleProposal(proposal.id)}
-                        className="w-full p-4 flex items-center justify-between hover:bg-accent/50 transition-colors"
+                        className="w-full p-2 flex items-center justify-between hover:bg-accent/50 transition-colors"
                       >
                         <div className="flex items-center gap-3">
                           {expandedProposals.has(proposal.id) ? (
@@ -599,15 +592,15 @@ export default function ProjectDetailPage() {
                         </div>
                       </button>
                       {expandedProposals.has(proposal.id) && (
-                        <div className="px-4 pb-4 pt-0 space-y-3">
+                        <div className="px-2 pb-4 pt-0 space-y-3">
                           <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                            <p className="text-sm font-medium mb-1">内容:</p>
-                            <p className="text-sm whitespace-pre-wrap">{proposal.content}</p>
+                            <p className="text-sm font-medium mb-2">内容:</p>
+                            <RichTextViewer content={proposal.content} className="text-sm" />
                           </div>
                           {proposal.reason && (
                             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                              <p className="text-sm font-medium mb-1">理由:</p>
-                              <p className="text-sm whitespace-pre-wrap">{proposal.reason}</p>
+                              <p className="text-sm font-medium mb-2">理由:</p>
+                              <RichTextViewer content={proposal.reason} className="text-sm" />
                             </div>
                           )}
                         </div>
@@ -622,7 +615,7 @@ export default function ProjectDetailPage() {
       </Card>
 
       {/* メモセクション */}
-      <Card className="mb-4 md:mb-6 shadow-lg">
+      <Card className="mb-2 md:mb-3 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950 dark:to-yellow-950">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -638,15 +631,15 @@ export default function ProjectDetailPage() {
             />
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-3">
           {/* 新規メモ追加フォーム */}
           {isAddingMemo && (
-            <div className="mb-4 p-4 border-2 border-primary rounded-lg">
-              <Textarea
-                value={memoContent}
-                onChange={(e) => setMemoContent(e.target.value)}
+            <div className="mb-2 p-2 border-2 border-primary rounded-lg">
+              <RichTextEditor
+                content={memoContent}
+                onChange={setMemoContent}
                 placeholder="メモを入力..."
-                className="min-h-[100px] mb-3"
+                className="mb-3"
               />
               <div className="flex gap-2">
                 <Button onClick={handleAddMemo} size="sm" className="flex-1">
@@ -677,13 +670,13 @@ export default function ProjectDetailPage() {
               </p>
             ) : (
               memos.map((memo) => (
-                <div key={memo.id} className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
+                <div key={memo.id} className="p-2 border rounded-lg hover:border-primary/50 transition-colors">
                   {editingMemoId === memo.id ? (
                     <>
-                      <Textarea
-                        value={memoContent}
-                        onChange={(e) => setMemoContent(e.target.value)}
-                        className="min-h-[100px] mb-3"
+                      <RichTextEditor
+                        content={memoContent}
+                        onChange={setMemoContent}
+                        className="mb-3"
                       />
                       <div className="flex gap-2">
                         <Button onClick={() => handleUpdateMemo(memo.id)} size="sm" className="flex-1">
@@ -727,7 +720,7 @@ export default function ProjectDetailPage() {
                           </Button>
                         </div>
                       </div>
-                      <p className="whitespace-pre-wrap">{memo.content}</p>
+                      <RichTextViewer content={memo.content} />
                     </>
                   )}
                 </div>
@@ -737,7 +730,7 @@ export default function ProjectDetailPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-3 lg:grid-cols-2">
         {/* 関連タスク */}
         <Card className="shadow-lg">
           <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
@@ -756,10 +749,10 @@ export default function ProjectDetailPage() {
               </Link>
             </div>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-3">
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {tasks.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">タスクがありません</p>
+                <p className="text-muted-foreground text-center py-2">タスクがありません</p>
               ) : (
                 tasks.map((task) => (
                   <Link key={task.id} href={`/tasks/${task.id}`}>
@@ -786,7 +779,7 @@ export default function ProjectDetailPage() {
         </Card>
 
         {/* 関連顧客・LINEグループ */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* 顧客 */}
           <Card className="shadow-lg">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950">
@@ -795,10 +788,10 @@ export default function ProjectDetailPage() {
                 顧客 ({customers.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-3">
               <div className="space-y-2">
                 {customers.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">顧客が設定されていません</p>
+                  <p className="text-muted-foreground text-center py-2">顧客が設定されていません</p>
                 ) : (
                   customers.map((customer) => (
                     <Link key={customer.id} href={`/customers/${customer.id}`}>
@@ -823,10 +816,10 @@ export default function ProjectDetailPage() {
                 LINEグループ ({lineGroups.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-3">
               <div className="space-y-2">
                 {lineGroups.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">LINEグループが設定されていません</p>
+                  <p className="text-muted-foreground text-center py-2">LINEグループが設定されていません</p>
                 ) : (
                   lineGroups.map((lineGroup) => (
                     <Link key={lineGroup.id} href={`/line-groups/${lineGroup.id}`}>
@@ -846,14 +839,14 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* ファイル添付セクション */}
-      <Card className="mb-6 shadow-lg">
+      <Card className="mb-3 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950">
           <CardTitle className="flex items-center gap-2">
             <Paperclip className="h-5 w-5 text-indigo-600" />
             添付ファイル
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-3">
           <FileUpload
             projectId={projectId}
             attachments={attachments}
@@ -863,14 +856,14 @@ export default function ProjectDetailPage() {
       </Card>
 
       {/* コメントセクション */}
-      <Card className="mb-6 shadow-lg">
+      <Card className="mb-3 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950">
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-teal-600" />
             コメント
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-3">
           <Comments projectId={projectId} />
         </CardContent>
       </Card>

@@ -9,6 +9,8 @@ import { StatusBadge, StatusType } from '@/components/ui/status-badge'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { ActionButton } from '@/components/ui/action-button'
 import { Input } from '@/components/ui/input'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
+import { RichTextViewer } from '@/components/ui/rich-text-viewer'
 import { Label } from '@/components/ui/label'
 import { 
   ArrowLeft, Users, FolderOpen, CheckSquare, MessageSquare, 
@@ -176,7 +178,7 @@ export default function CustomerDetailPage() {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
-          <Users className="h-8 w-8 animate-pulse text-primary mx-auto mb-2" />
+          <Users className="h-5 w-5 animate-pulse text-primary mx-auto mb-2" />
           <p className="text-muted-foreground">読み込み中...</p>
         </div>
       </div>
@@ -185,15 +187,15 @@ export default function CustomerDetailPage() {
 
   if (!customer) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-3">
         <p>顧客が見つかりません</p>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-6">
+    <div className="container mx-auto p-3 max-w-7xl">
+      <div className="mb-3">
         <Link href="/customers">
           <ActionButton
             icon={<ArrowLeft className="h-4 w-4" />}
@@ -204,9 +206,9 @@ export default function CustomerDetailPage() {
         </Link>
       </div>
 
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-          <Users className="h-8 w-8 text-blue-600" />
+      <div className="mb-2">
+        <h1 className="text-xl font-bold mb-2 flex items-center gap-3">
+          <Users className="h-5 w-5 text-blue-600" />
           {customer.name}
         </h1>
         <p className="text-muted-foreground">
@@ -214,7 +216,7 @@ export default function CustomerDetailPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-3 lg:grid-cols-2">
         {/* Plaud要約セクション */}
         <Card className="lg:col-span-2 shadow-lg">
           <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
@@ -232,11 +234,11 @@ export default function CustomerDetailPage() {
               />
             </div>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-3">
             {showSummaryForm && (
-              <div className="mb-6 p-4 border-2 border-primary/20 rounded-lg bg-primary/5">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+              <div className="mb-3 p-2 border-2 border-primary/20 rounded-lg bg-primary/5">
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label htmlFor="title">タイトル</Label>
                       <Input
@@ -258,11 +260,9 @@ export default function CustomerDetailPage() {
                   </div>
                   <div>
                     <Label htmlFor="content">要約内容</Label>
-                    <textarea
-                      id="content"
-                      className="w-full p-3 border rounded-md min-h-[200px]"
-                      value={newSummary.content}
-                      onChange={(e) => setNewSummary({ ...newSummary, content: e.target.value })}
+                    <RichTextEditor
+                      content={newSummary.content}
+                      onChange={(value) => setNewSummary({ ...newSummary, content: value })}
                       placeholder="Plaudの要約を貼り付けてください"
                     />
                   </div>
@@ -301,7 +301,7 @@ export default function CustomerDetailPage() {
                   <div key={summary.id} className="border rounded-lg hover:shadow-md transition-shadow">
                     <button
                       onClick={() => toggleSummary(summary.id)}
-                      className="w-full p-4 flex items-center justify-between hover:bg-accent/50 transition-colors"
+                      className="w-full p-2 flex items-center justify-between hover:bg-accent/50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         {expandedSummaries.has(summary.id) ? (
@@ -329,9 +329,9 @@ export default function CustomerDetailPage() {
                       />
                     </button>
                     {expandedSummaries.has(summary.id) && (
-                      <div className="px-4 pb-4 pt-0">
-                        <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-                          <pre className="whitespace-pre-wrap text-sm">{summary.content}</pre>
+                      <div className="px-2 pb-4 pt-0">
+                        <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                          <RichTextViewer content={summary.content} className="text-sm" />
                         </div>
                       </div>
                     )}
@@ -350,10 +350,10 @@ export default function CustomerDetailPage() {
               関連プロジェクト ({projects.length})
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-3">
             <div className="space-y-3">
               {projects.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">関連プロジェクトがありません</p>
+                <p className="text-muted-foreground text-center py-2">関連プロジェクトがありません</p>
               ) : (
                 projects.map((project) => (
                   <Link key={project.id} href={`/projects/${project.id}`}>
@@ -387,10 +387,10 @@ export default function CustomerDetailPage() {
               関連タスク ({tasks.length})
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-3">
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {tasks.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">関連タスクがありません</p>
+                <p className="text-muted-foreground text-center py-2">関連タスクがありません</p>
               ) : (
                 tasks.map((task) => (
                   <Link key={task.id} href={`/tasks/${task.id}`}>
@@ -424,10 +424,10 @@ export default function CustomerDetailPage() {
               関連LINEグループ ({lineGroups.length})
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-3">
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {lineGroups.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4 col-span-full">
+                <p className="text-muted-foreground text-center py-2 col-span-full">
                   関連LINEグループがありません
                 </p>
               ) : (
