@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { LineGroup } from '@/lib/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card-detail'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -162,59 +163,101 @@ export default function LineGroupsPage() {
           </Card>
         ) : (
           filteredLineGroups.map((lineGroup) => (
-            <Card key={lineGroup.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="p-2">
-                <div className="flex justify-between items-start">
-                  <Link href={`/line-groups/${lineGroup.id}`} className="flex-1">
-                    <div className="flex items-start gap-2">
-                      <MessageSquare className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
-                        {lineGroup.name}
-                      </CardTitle>
+            <HoverCard key={lineGroup.id}>
+              <HoverCardTrigger asChild>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardHeader className="p-2">
+                    <div className="flex justify-between items-start">
+                      <Link href={`/line-groups/${lineGroup.id}`} className="flex-1">
+                        <div className="flex items-start gap-2">
+                          <MessageSquare className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
+                            {lineGroup.name}
+                          </CardTitle>
+                        </div>
+                      </Link>
+                      <div className="flex gap-1 ml-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => handleCopyName(lineGroup)}
+                          title="グループ名をコピー"
+                        >
+                          {copiedId === lineGroup.id ? (
+                            <Check className="h-3 w-3 text-green-600" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => {
+                            setEditingGroup(lineGroup)
+                            setIsEditDialogOpen(true)
+                          }}
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => handleDeleteLineGroup(lineGroup.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
-                  </Link>
-                  <div className="flex gap-1 ml-2">
+                  </CardHeader>
+                  <CardContent className="pt-0 px-2 pb-4">
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(lineGroup.created_at).toLocaleDateString('ja-JP')}
+                    </p>
+                  </CardContent>
+                </Card>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80" align="start">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2">
+                    <MessageSquare className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="text-base font-semibold break-words">{lineGroup.name}</h4>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        作成日: {new Date(lineGroup.created_at).toLocaleDateString('ja-JP')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
                     <Button
-                      variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0"
+                      variant="outline"
                       onClick={() => handleCopyName(lineGroup)}
-                      title="グループ名をコピー"
+                      className="flex-1"
                     >
                       {copiedId === lineGroup.id ? (
-                        <Check className="h-3 w-3 text-green-600" />
+                        <>
+                          <Check className="h-3 w-3 mr-1 text-green-600" />
+                          コピー済み
+                        </>
                       ) : (
-                        <Copy className="h-3 w-3" />
+                        <>
+                          <Copy className="h-3 w-3 mr-1" />
+                          グループ名をコピー
+                        </>
                       )}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => {
-                        setEditingGroup(lineGroup)
-                        setIsEditDialogOpen(true)
-                      }}
-                    >
-                      <Edit2 className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => handleDeleteLineGroup(lineGroup.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    <Link href={`/line-groups/${lineGroup.id}`} className="flex-1">
+                      <Button size="sm" className="w-full">
+                        詳細を見る
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="pt-0 px-2 pb-4">
-                <p className="text-xs text-muted-foreground">
-                  {new Date(lineGroup.created_at).toLocaleDateString('ja-JP')}
-                </p>
-              </CardContent>
-            </Card>
+              </HoverCardContent>
+            </HoverCard>
           ))
         )}
       </div>

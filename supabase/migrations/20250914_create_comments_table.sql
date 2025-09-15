@@ -23,24 +23,30 @@ CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments(created_at DESC);
 -- RLSポリシーの設定
 ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
 
+-- 既存のポリシーを削除（存在する場合）
+DROP POLICY IF EXISTS "Comments are viewable by everyone" ON comments;
+DROP POLICY IF EXISTS "Comments can be created by everyone" ON comments;
+DROP POLICY IF EXISTS "Comments can be updated by everyone" ON comments;
+DROP POLICY IF EXISTS "Comments can be deleted by everyone" ON comments;
+
 -- 全ユーザーがコメントを読める
-CREATE POLICY IF NOT EXISTS "Comments are viewable by everyone"
+CREATE POLICY "Comments are viewable by everyone"
     ON comments FOR SELECT
     USING (true);
 
 -- 全ユーザーがコメントを作成できる
-CREATE POLICY IF NOT EXISTS "Comments can be created by everyone"
+CREATE POLICY "Comments can be created by everyone"
     ON comments FOR INSERT
     WITH CHECK (true);
 
 -- 全ユーザーがコメントを更新できる
-CREATE POLICY IF NOT EXISTS "Comments can be updated by everyone"
+CREATE POLICY "Comments can be updated by everyone"
     ON comments FOR UPDATE
     USING (true)
     WITH CHECK (true);
 
 -- 全ユーザーがコメントを削除できる
-CREATE POLICY IF NOT EXISTS "Comments can be deleted by everyone"
+CREATE POLICY "Comments can be deleted by everyone"
     ON comments FOR DELETE
     USING (true);
 
