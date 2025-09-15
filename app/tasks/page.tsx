@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { ActionButton } from '@/components/ui/action-button'
-import { Plus, Search, Calendar, Filter, CheckSquare, FolderOpen, ArrowUp, ChevronDown, ChevronUp, User, Edit2 } from 'lucide-react'
+import { Plus, Search, Calendar, Filter, CheckSquare, FolderOpen, ArrowUp, ChevronDown, ChevronUp, User, Edit2, Clock } from 'lucide-react'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card-detail'
 import Link from 'next/link'
 
 type Assignee = {
@@ -344,7 +345,7 @@ export default function TasksPage() {
       </div>
 
       {/* タスクリスト */}
-      <div className="grid gap-2">
+      <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredTasks.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
@@ -353,55 +354,113 @@ export default function TasksPage() {
           </Card>
         ) : (
           filteredTasks.map((task) => (
-            <Card key={task.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="p-2">
-                <div className="flex justify-between items-start">
-                  <Link href={`/tasks/${task.id}`} className="flex-1">
-                    <div className="flex items-start gap-2">
-                      <CheckSquare className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
-                        {task.title}
-                      </CardTitle>
-                    </div>
+            <HoverCard key={task.id}>
+              <HoverCardTrigger asChild>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                  <Link href={`/tasks/${task.id}`} className="block h-full">
+                    <CardHeader className="p-2">
+                      <div className="flex items-start gap-1.5">
+                        <CheckSquare className="h-3.5 w-3.5 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <CardTitle className="text-sm hover:text-primary transition-colors line-clamp-1 flex-1">
+                          {task.title}
+                        </CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0 px-2 pb-2">
+                      <div className="flex items-center gap-1 mb-1">
+                        <StatusBadge status={task.status as StatusType} size="sm" />
+                        <PriorityIndicator priority={task.priority} size="sm" showLabel={false} />
+                      </div>
+                      {task.deadline && (
+                        <div className="text-2xs text-muted-foreground flex items-center gap-0.5">
+                          <Calendar className="h-2.5 w-2.5" />
+                          {new Date(task.deadline).toLocaleDateString('ja-JP')}
+                        </div>
+                      )}
+                    </CardContent>
                   </Link>
-                  <div className="flex items-center gap-1 ml-2">
-                    <StatusBadge status={task.status as StatusType} size="sm" />
+                </Card>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-96" align="start">
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-2">
+                      <CheckSquare className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div>
+                        <h4 className="text-base font-semibold">{task.title}</h4>
+                        {task.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
+                        )}
+                      </div>
+                    </div>
                     <Link href={`/tasks/${task.id}/edit`}>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                        <Edit2 className="h-3 w-3" />
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Edit2 className="h-4 w-4" />
                       </Button>
                     </Link>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0 px-2 pb-2">
-                <div className="flex items-center gap-2 mb-1">
-                  <PriorityIndicator priority={task.priority} size="sm" showLabel={false} />
-                  {task.deadline && (
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(task.deadline).toLocaleDateString('ja-JP')}
-                    </span>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1">
+
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">ステータス:</span>
+                      <div className="mt-1">
+                        <StatusBadge status={task.status as StatusType} />
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">優先度:</span>
+                      <div className="mt-1">
+                        <PriorityIndicator priority={task.priority} />
+                      </div>
+                    </div>
+                    {task.deadline && (
+                      <div>
+                        <span className="text-muted-foreground">期限:</span>
+                        <div className="mt-1 flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(task.deadline).toLocaleDateString('ja-JP')}
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-muted-foreground">作成日:</span>
+                      <div className="mt-1 flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        {new Date(task.created_at).toLocaleDateString('ja-JP')}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 関連プロジェクト */}
                   {projects[task.project_id] && (
-                    <Link href={`/projects/${task.project_id}`}>
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded text-2xs transition-colors cursor-pointer">
-                        <FolderOpen className="h-2.5 w-2.5" />
-                        {projects[task.project_id].name}
-                      </span>
-                    </Link>
+                    <div>
+                      <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
+                        <FolderOpen className="h-4 w-4 text-purple-600" />
+                        関連プロジェクト
+                      </h5>
+                      <Link href={`/projects/${task.project_id}`}>
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded text-xs transition-colors">
+                          {projects[task.project_id].name}
+                        </span>
+                      </Link>
+                    </div>
                   )}
+
+                  {/* 担当者 */}
                   {task.assignee && (
-                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-green-50 text-green-700 rounded text-2xs">
-                      <User className="h-2.5 w-2.5" />
-                      {task.assignee.name}
-                    </span>
+                    <div>
+                      <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
+                        <User className="h-4 w-4 text-green-600" />
+                        担当者
+                      </h5>
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded text-xs">
+                        {task.assignee.name}
+                      </span>
+                    </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </HoverCardContent>
+            </HoverCard>
           ))
         )}
       </div>

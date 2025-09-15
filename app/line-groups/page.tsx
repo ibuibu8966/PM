@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Search, Edit2, Trash2, X, MessageSquare } from 'lucide-react'
+import { Plus, Search, Edit2, Trash2, X, MessageSquare, Copy, Check } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LineGroupsPage() {
@@ -18,6 +18,7 @@ export default function LineGroupsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
   const [editingGroup, setEditingGroup] = useState<LineGroup | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -94,11 +95,22 @@ export default function LineGroupsPage() {
         .eq('id', id)
 
       if (error) throw error
-      
+
       setLineGroups(lineGroups.filter(lg => lg.id !== id))
     } catch (error) {
       console.error('LINEグループ削除エラー:', error)
       alert('LINEグループの削除に失敗しました。関連するプロジェクトがある可能性があります。')
+    }
+  }
+
+  const handleCopyName = async (lineGroup: LineGroup) => {
+    try {
+      await navigator.clipboard.writeText(lineGroup.name)
+      setCopiedId(lineGroup.id)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (error) {
+      console.error('コピーエラー:', error)
+      alert('クリップボードへのコピーに失敗しました')
     }
   }
 
@@ -162,6 +174,19 @@ export default function LineGroupsPage() {
                     </div>
                   </Link>
                   <div className="flex gap-1 ml-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleCopyName(lineGroup)}
+                      title="グループ名をコピー"
+                    >
+                      {copiedId === lineGroup.id ? (
+                        <Check className="h-3 w-3 text-green-600" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"

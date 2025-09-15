@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { ActionButton } from '@/components/ui/action-button'
-import { Plus, Search, Calendar, Users, MessageSquare, FolderOpen, Filter, ArrowUp, ChevronDown, ChevronUp, Edit2 } from 'lucide-react'
+import { Plus, Search, Calendar, Users, MessageSquare, FolderOpen, Filter, ArrowUp, ChevronDown, ChevronUp, Edit2, Clock } from 'lucide-react'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card-detail'
 import Link from 'next/link'
 
 export default function ProjectsPage() {
@@ -301,7 +302,7 @@ export default function ProjectsPage() {
       </div>
 
       {/* プロジェクトリスト */}
-      <div className="grid gap-2">
+      <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredProjects.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
@@ -310,61 +311,122 @@ export default function ProjectsPage() {
           </Card>
         ) : (
           filteredProjects.map((project) => (
-            <Card key={project.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="p-2">
-                <div className="flex justify-between items-start">
-                  <Link href={`/projects/${project.id}`} className="flex-1">
-                    <div className="flex items-start gap-2">
-                      <FolderOpen className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
-                      <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
-                        {project.name}
-                      </CardTitle>
-                    </div>
+            <HoverCard key={project.id}>
+              <HoverCardTrigger asChild>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                  <Link href={`/projects/${project.id}`} className="block h-full">
+                    <CardHeader className="p-2">
+                      <div className="flex items-start gap-1.5">
+                        <FolderOpen className="h-3.5 w-3.5 text-purple-600 mt-0.5 flex-shrink-0" />
+                        <CardTitle className="text-sm hover:text-primary transition-colors line-clamp-1 flex-1">
+                          {project.name}
+                        </CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0 px-2 pb-2">
+                      <div className="flex items-center gap-1 mb-1">
+                        <StatusBadge status={project.status as StatusType} size="sm" />
+                        <PriorityIndicator priority={project.priority} size="sm" showLabel={false} />
+                      </div>
+                      {project.deadline && (
+                        <div className="text-2xs text-muted-foreground flex items-center gap-0.5">
+                          <Calendar className="h-2.5 w-2.5" />
+                          {new Date(project.deadline).toLocaleDateString('ja-JP')}
+                        </div>
+                      )}
+                    </CardContent>
                   </Link>
-                  <div className="flex items-center gap-1 ml-2">
-                    <StatusBadge status={project.status as StatusType} size="sm" />
+                </Card>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-96" align="start">
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-2">
+                      <FolderOpen className="h-5 w-5 text-purple-600 mt-0.5" />
+                      <div>
+                        <h4 className="text-base font-semibold">{project.name}</h4>
+                        {project.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
+                        )}
+                      </div>
+                    </div>
                     <Link href={`/projects/${project.id}/edit`}>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                        <Edit2 className="h-3 w-3" />
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Edit2 className="h-4 w-4" />
                       </Button>
                     </Link>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0 px-2 pb-2">
-                <div className="flex items-center gap-2 mb-1">
-                  <PriorityIndicator priority={project.priority} size="sm" showLabel={false} />
-                  {project.deadline && (
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(project.deadline).toLocaleDateString('ja-JP')}
-                    </span>
+
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">ステータス:</span>
+                      <div className="mt-1">
+                        <StatusBadge status={project.status as StatusType} />
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">優先度:</span>
+                      <div className="mt-1">
+                        <PriorityIndicator priority={project.priority} />
+                      </div>
+                    </div>
+                    {project.deadline && (
+                      <div>
+                        <span className="text-muted-foreground">期限:</span>
+                        <div className="mt-1 flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(project.deadline).toLocaleDateString('ja-JP')}
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-muted-foreground">作成日:</span>
+                      <div className="mt-1 flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        {new Date(project.created_at).toLocaleDateString('ja-JP')}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 関連情報 */}
+                  {projectRelations[project.id]?.customers.length > 0 && (
+                    <div>
+                      <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
+                        <Users className="h-4 w-4 text-blue-600" />
+                        関連顧客
+                      </h5>
+                      <div className="flex flex-wrap gap-1">
+                        {projectRelations[project.id].customers.map(customer => (
+                          <Link key={customer.id} href={`/customers/${customer.id}`}>
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-xs transition-colors">
+                              {customer.name}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {projectRelations[project.id]?.lineGroups.length > 0 && (
+                    <div>
+                      <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
+                        <MessageSquare className="h-4 w-4 text-green-600" />
+                        LINEグループ
+                      </h5>
+                      <div className="flex flex-wrap gap-1">
+                        {projectRelations[project.id].lineGroups.map(lineGroup => (
+                          <Link key={lineGroup.id} href={`/line-groups/${lineGroup.id}`}>
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 hover:bg-green-100 text-green-700 rounded text-xs transition-colors">
+                              {lineGroup.name}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
-                {/* 関連情報 */}
-                {(projectRelations[project.id]?.customers.length > 0 ||
-                  projectRelations[project.id]?.lineGroups.length > 0) && (
-                  <div className="flex flex-wrap gap-1">
-                    {projectRelations[project.id]?.customers.slice(0, 2).map(customer => (
-                      <span key={customer.id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-2xs">
-                        <Users className="h-2.5 w-2.5" />
-                        {customer.name}
-                      </span>
-                    ))}
-                    {projectRelations[project.id]?.lineGroups.slice(0, 2).map(lineGroup => (
-                      <span key={lineGroup.id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-green-50 text-green-700 rounded text-2xs">
-                        <MessageSquare className="h-2.5 w-2.5" />
-                        {lineGroup.name}
-                      </span>
-                    ))}
-                    {((projectRelations[project.id]?.customers.length > 2) ||
-                      (projectRelations[project.id]?.lineGroups.length > 2)) && (
-                      <span className="text-2xs text-muted-foreground">...</span>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+              </HoverCardContent>
+            </HoverCard>
           ))
         )}
       </div>
