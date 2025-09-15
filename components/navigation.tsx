@@ -12,8 +12,7 @@ import {
   Menu,
   X,
   UserCheck,
-  BarChart3,
-  RefreshCw
+  BarChart3
 } from 'lucide-react'
 import { useState } from 'react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -27,7 +26,6 @@ export default function Navigation() {
     { href: '/dashboard', label: 'ダッシュボード', icon: Home },
     { href: '/projects', label: 'プロジェクト', icon: FolderOpen },
     { href: '/tasks', label: 'タスク', icon: CheckSquare },
-    { href: '/recurring-tasks', label: '繰り返し', icon: RefreshCw },
     { href: '/customers', label: '顧客', icon: Users },
     { href: '/line-groups', label: 'LINEグループ', icon: MessageSquare },
     { href: '/assignees', label: '担当者別', icon: UserCheck },

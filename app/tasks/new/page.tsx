@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Project, Customer, LineGroup } from '@/lib/types/database'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
 export default function NewTaskPage() {
@@ -31,8 +32,23 @@ export default function NewTaskPage() {
     projectId: projectIdFromUrl || '',
     priority: 5,
     deadline: '',
-    assigneeId: ''
+    assigneeId: '',
+    isRecurring: false,
+    recurrenceType: 'daily' as 'daily' | 'weekly' | 'monthly',
+    recurrenceInterval: 1,
+    weekDays: [] as number[],
+    monthDay: 1
   })
+
+  const WEEKDAYS = [
+    { value: 0, label: '日' },
+    { value: 1, label: '月' },
+    { value: 2, label: '火' },
+    { value: 3, label: '水' },
+    { value: 4, label: '木' },
+    { value: 5, label: '金' },
+    { value: 6, label: '土' },
+  ]
 
   useEffect(() => {
     fetchInitialData()
@@ -91,29 +107,67 @@ export default function NewTaskPage() {
     setLoading(true)
 
     try {
-      // タスク作成データの準備
-      const taskData: Record<string, unknown> = {
-        title: formData.title,
-        description: formData.description,
-        project_id: formData.projectId,
-        priority: formData.priority,
-        status: 'not_started',
-        deadline: formData.deadline || null
+      if (formData.isRecurring) {
+        // 繰り返しタスクとして作成
+        const recurringData = {
+          title: formData.title,
+          description: formData.description || null,
+          project_id: formData.projectId || null,
+          priority: formData.priority,
+          recurrence_type: formData.recurrenceType,
+          recurrence_interval: formData.recurrenceInterval,
+          week_days: formData.recurrenceType === 'weekly' ? formData.weekDays : null,
+          month_day: formData.recurrenceType === 'monthly' ? formData.monthDay : null,
+          is_active: true,
+          next_generation_at: new Date().toISOString().split('T')[0],
+        }
+
+        const { error: recurringError } = await supabase
+          .from('recurring_tasks')
+          .insert(recurringData)
+
+        if (recurringError) throw recurringError
+
+        // 初回のタスクも作成
+        const taskData: Record<string, unknown> = {
+          title: formData.title,
+          description: formData.description,
+          project_id: formData.projectId,
+          priority: formData.priority,
+          status: 'not_started',
+          deadline: formData.deadline || new Date().toISOString()
+        }
+
+        if (formData.assigneeId && formData.assigneeId !== 'none') {
+          taskData.assignee_id = formData.assigneeId
+        }
+
+        const { error: taskError } = await supabase
+          .from('tasks')
+          .insert(taskData)
+
+        if (taskError) throw taskError
+      } else {
+        // 通常のタスクとして作成
+        const taskData: Record<string, unknown> = {
+          title: formData.title,
+          description: formData.description,
+          project_id: formData.projectId,
+          priority: formData.priority,
+          status: 'not_started',
+          deadline: formData.deadline || null
+        }
+
+        if (formData.assigneeId && formData.assigneeId !== 'none') {
+          taskData.assignee_id = formData.assigneeId
+        }
+
+        const { error: taskError } = await supabase
+          .from('tasks')
+          .insert(taskData)
+
+        if (taskError) throw taskError
       }
-
-      // 担当者IDがある場合のみ追加（カラムが存在しない場合のエラーを回避）
-      if (formData.assigneeId && formData.assigneeId !== 'none') {
-        taskData.assignee_id = formData.assigneeId
-      }
-
-      const { error: taskError } = await supabase
-        .from('tasks')
-        .insert(taskData)
-        .select()
-        .single()
-
-      if (taskError) throw taskError
-
 
       router.push('/tasks')
     } catch (error) {
@@ -227,6 +281,118 @@ export default function NewTaskPage() {
           </CardContent>
         </Card>
 
+        {/* 繰り返し設定 */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5" />
+              繰り返し設定
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isRecurring"
+                checked={formData.isRecurring}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isRecurring: checked as boolean })
+                }
+              />
+              <Label htmlFor="isRecurring" className="cursor-pointer">
+                繰り返しタスクとして設定
+              </Label>
+            </div>
+
+            {formData.isRecurring && (
+              <>
+                <div>
+                  <Label htmlFor="recurrenceType">繰り返しタイプ</Label>
+                  <Select
+                    value={formData.recurrenceType}
+                    onValueChange={(value: 'daily' | 'weekly' | 'monthly') =>
+                      setFormData({ ...formData, recurrenceType: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">毎日</SelectItem>
+                      <SelectItem value="weekly">毎週</SelectItem>
+                      <SelectItem value="monthly">毎月</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.recurrenceType === 'daily' && (
+                  <div>
+                    <Label htmlFor="interval">間隔（日）</Label>
+                    <Input
+                      id="interval"
+                      type="number"
+                      min="1"
+                      value={formData.recurrenceInterval}
+                      onChange={(e) =>
+                        setFormData({ ...formData, recurrenceInterval: parseInt(e.target.value) })
+                      }
+                    />
+                  </div>
+                )}
+
+                {formData.recurrenceType === 'weekly' && (
+                  <div>
+                    <Label>曜日を選択</Label>
+                    <div className="flex gap-2 mt-2">
+                      {WEEKDAYS.map((day) => (
+                        <div key={day.value} className="flex items-center">
+                          <Checkbox
+                            id={`day-${day.value}`}
+                            checked={formData.weekDays.includes(day.value)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setFormData({
+                                  ...formData,
+                                  weekDays: [...formData.weekDays, day.value],
+                                })
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  weekDays: formData.weekDays.filter((d) => d !== day.value),
+                                })
+                              }
+                            }}
+                          />
+                          <Label
+                            htmlFor={`day-${day.value}`}
+                            className="ml-1 cursor-pointer"
+                          >
+                            {day.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {formData.recurrenceType === 'monthly' && (
+                  <div>
+                    <Label htmlFor="monthDay">日付</Label>
+                    <Input
+                      id="monthDay"
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={formData.monthDay}
+                      onChange={(e) =>
+                        setFormData({ ...formData, monthDay: parseInt(e.target.value) })
+                      }
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
 
         <div className="flex gap-4">
           <Button type="submit" disabled={loading} className="flex-1">
