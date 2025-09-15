@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Project, Task, Customer, LineGroup, Proposal, Memo, Attachment } from '@/lib/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardText } from '@/components/ui/card-text'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
@@ -15,6 +16,8 @@ import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { InlineStatusSelect } from '@/components/ui/inline-status-select'
 import { InlinePrioritySelect } from '@/components/ui/inline-priority-select'
 import { ActionButton } from '@/components/ui/action-button'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card-detail'
+import { useToast } from '@/contexts/toast-context'
 import {
   ArrowLeft, FolderOpen, CheckSquare, Users, MessageSquare,
   Lightbulb, Calendar, Plus, ChevronDown, ChevronRight,
@@ -28,6 +31,7 @@ export default function ProjectDetailPage() {
   const params = useParams()
   const projectId = params.id as string
   const supabase = createClient()
+  const { showToast } = useToast()
   
   const [project, setProject] = useState<Project | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
@@ -146,9 +150,28 @@ export default function ProjectDetailPage() {
     }
   }
 
+  const handleTaskStatusUpdate = async (taskId: string, newStatus: StatusType) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ status: newStatus })
+        .eq('id', taskId)
+
+      if (error) throw error
+
+      setTasks(prev => prev.map(t =>
+        t.id === taskId ? { ...t, status: newStatus } : t
+      ))
+      showToast('ステータスを更新しました', 'success')
+    } catch (error) {
+      console.error('ステータス更新エラー:', error)
+      showToast('ステータスの更新に失敗しました', 'error')
+    }
+  }
+
   const updateProjectStatus = async (newStatus: StatusType) => {
     if (!project) return
-    
+
     const { error } = await supabase
       .from('projects')
       .update({ status: newStatus })
@@ -755,23 +778,81 @@ export default function ProjectDetailPage() {
                 <p className="text-muted-foreground text-center py-2">タスクがありません</p>
               ) : (
                 tasks.map((task) => (
-                  <Link key={task.id} href={`/tasks/${task.id}`}>
-                    <div className="p-3 border-2 rounded-lg hover:border-primary hover:bg-primary/5 cursor-pointer transition-all">
-                      <div className="flex items-start justify-between">
-                        <h4 className="font-semibold text-sm">{task.title}</h4>
-                        <StatusBadge status={task.status as StatusType} size="sm" />
-                      </div>
-                      <div className="flex items-center gap-3 mt-2">
-                        <PriorityIndicator priority={task.priority} size="sm" showLabel={false} />
-                        {task.deadline && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(task.deadline).toLocaleDateString('ja-JP')}
-                          </span>
-                        )}
+                  <div key={task.id} className="p-3 border-2 rounded-lg hover:border-primary hover:bg-primary/5 transition-all">
+                    <div className="flex items-start justify-between">
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Link href={`/tasks/${task.id}`}>
+                            <h4 className="font-semibold text-sm cursor-pointer hover:text-primary">
+                              <CardText lines={1}>{task.title}</CardText>
+                            </h4>
+                          </Link>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-96" align="start">
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-2">
+                                <CheckSquare className="h-5 w-5 text-blue-600 mt-0.5" />
+                                <div>
+                                  <h4 className="text-base font-semibold">
+                                    <CardText lines={2}>{task.title}</CardText>
+                                  </h4>
+                                  {task.description && (
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      <CardText lines={3}>{task.description}</CardText>
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <Link href={`/tasks/${task.id}/edit`}>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">ステータス:</span>
+                                <div className="mt-1">
+                                  <StatusBadge status={task.status as StatusType} />
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">優先度:</span>
+                                <div className="mt-1">
+                                  <PriorityIndicator priority={task.priority} />
+                                </div>
+                              </div>
+                              {task.deadline && (
+                                <div>
+                                  <span className="text-muted-foreground">期限:</span>
+                                  <div className="mt-1 flex items-center gap-1">
+                                    <Calendar className="h-4 w-4" />
+                                    {new Date(task.deadline).toLocaleDateString('ja-JP')}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <InlineStatusSelect
+                          value={task.status as StatusType}
+                          onChange={(newStatus) => handleTaskStatusUpdate(task.id, newStatus)}
+                        />
                       </div>
                     </div>
-                  </Link>
+                    <div className="flex items-center gap-3 mt-2">
+                      <PriorityIndicator priority={task.priority} size="sm" showLabel={false} />
+                      {task.deadline && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(task.deadline).toLocaleDateString('ja-JP')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 ))
               )}
             </div>

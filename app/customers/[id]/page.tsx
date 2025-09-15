@@ -5,15 +5,21 @@ import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Customer, Project, Task, LineGroup, PlaudSummary } from '@/lib/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardText } from '@/components/ui/card-text'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
+import { InlineStatusSelect } from '@/components/ui/inline-status-select'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { ActionButton } from '@/components/ui/action-button'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card-detail'
+import { useToast } from '@/contexts/toast-context'
+import { Button } from '@/components/ui/button'
+import { Edit2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { RichTextViewer } from '@/components/ui/rich-text-viewer'
 import { Label } from '@/components/ui/label'
-import { 
-  ArrowLeft, Users, FolderOpen, CheckSquare, MessageSquare, 
+import {
+  ArrowLeft, Users, FolderOpen, CheckSquare, MessageSquare,
   FileText, Plus, Calendar, ChevronDown, ChevronRight, Trash2, X
 } from 'lucide-react'
 import Link from 'next/link'
@@ -22,6 +28,7 @@ export default function CustomerDetailPage() {
   const params = useParams()
   const customerId = params.id as string
   const supabase = createClient()
+  const { showToast } = useToast()
   
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
@@ -113,6 +120,44 @@ export default function CustomerDetailPage() {
       console.error('データ取得エラー:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleProjectStatusUpdate = async (projectId: string, newStatus: StatusType) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: newStatus })
+        .eq('id', projectId)
+
+      if (error) throw error
+
+      setProjects(prev => prev.map(p =>
+        p.id === projectId ? { ...p, status: newStatus } : p
+      ))
+      showToast('ステータスを更新しました', 'success')
+    } catch (error) {
+      console.error('ステータス更新エラー:', error)
+      showToast('ステータスの更新に失敗しました', 'error')
+    }
+  }
+
+  const handleTaskStatusUpdate = async (taskId: string, newStatus: StatusType) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ status: newStatus })
+        .eq('id', taskId)
+
+      if (error) throw error
+
+      setTasks(prev => prev.map(t =>
+        t.id === taskId ? { ...t, status: newStatus } : t
+      ))
+      showToast('ステータスを更新しました', 'success')
+    } catch (error) {
+      console.error('ステータス更新エラー:', error)
+      showToast('ステータスの更新に失敗しました', 'error')
     }
   }
 
@@ -356,23 +401,81 @@ export default function CustomerDetailPage() {
                 <p className="text-muted-foreground text-center py-2">関連プロジェクトがありません</p>
               ) : (
                 projects.map((project) => (
-                  <Link key={project.id} href={`/projects/${project.id}`}>
-                    <div className="p-3 border-2 rounded-lg hover:border-primary hover:bg-primary/5 cursor-pointer transition-all">
-                      <div className="flex items-start justify-between">
-                        <h4 className="font-semibold">{project.name}</h4>
-                        <StatusBadge status={project.status as StatusType} size="sm" />
-                      </div>
-                      <div className="flex items-center gap-3 mt-2">
-                        <PriorityIndicator priority={project.priority} size="sm" showLabel={false} />
-                        {project.deadline && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(project.deadline).toLocaleDateString('ja-JP')}
-                          </span>
-                        )}
+                  <div key={project.id} className="p-3 border-2 rounded-lg hover:border-primary hover:bg-primary/5 transition-all">
+                    <div className="flex items-start justify-between">
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Link href={`/projects/${project.id}`}>
+                            <h4 className="font-semibold cursor-pointer hover:text-primary">
+                              <CardText lines={1}>{project.name}</CardText>
+                            </h4>
+                          </Link>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-96" align="start">
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-2">
+                                <FolderOpen className="h-5 w-5 text-purple-600 mt-0.5" />
+                                <div>
+                                  <h4 className="text-base font-semibold">
+                                    <CardText lines={2}>{project.name}</CardText>
+                                  </h4>
+                                  {project.description && (
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      <CardText lines={3}>{project.description}</CardText>
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <Link href={`/projects/${project.id}/edit`}>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">ステータス:</span>
+                                <div className="mt-1">
+                                  <StatusBadge status={project.status as StatusType} />
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">優先度:</span>
+                                <div className="mt-1">
+                                  <PriorityIndicator priority={project.priority} />
+                                </div>
+                              </div>
+                              {project.deadline && (
+                                <div>
+                                  <span className="text-muted-foreground">期限:</span>
+                                  <div className="mt-1 flex items-center gap-1">
+                                    <Calendar className="h-4 w-4" />
+                                    {new Date(project.deadline).toLocaleDateString('ja-JP')}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <InlineStatusSelect
+                          value={project.status as StatusType}
+                          onChange={(newStatus) => handleProjectStatusUpdate(project.id, newStatus)}
+                        />
                       </div>
                     </div>
-                  </Link>
+                    <div className="flex items-center gap-3 mt-2">
+                      <PriorityIndicator priority={project.priority} size="sm" showLabel={false} />
+                      {project.deadline && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(project.deadline).toLocaleDateString('ja-JP')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 ))
               )}
             </div>
@@ -393,23 +496,81 @@ export default function CustomerDetailPage() {
                 <p className="text-muted-foreground text-center py-2">関連タスクがありません</p>
               ) : (
                 tasks.map((task) => (
-                  <Link key={task.id} href={`/tasks/${task.id}`}>
-                    <div className="p-3 border-2 rounded-lg hover:border-primary hover:bg-primary/5 cursor-pointer transition-all">
-                      <div className="flex items-start justify-between">
-                        <h4 className="font-semibold text-sm">{task.title}</h4>
-                        <StatusBadge status={task.status as StatusType} size="sm" />
-                      </div>
-                      <div className="flex items-center gap-3 mt-2">
-                        <PriorityIndicator priority={task.priority} size="sm" showLabel={false} />
-                        {task.deadline && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(task.deadline).toLocaleDateString('ja-JP')}
-                          </span>
-                        )}
+                  <div key={task.id} className="p-3 border-2 rounded-lg hover:border-primary hover:bg-primary/5 transition-all">
+                    <div className="flex items-start justify-between">
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Link href={`/tasks/${task.id}`}>
+                            <h4 className="font-semibold text-sm cursor-pointer hover:text-primary">
+                              <CardText lines={1}>{task.title}</CardText>
+                            </h4>
+                          </Link>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-96" align="start">
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-2">
+                                <CheckSquare className="h-5 w-5 text-blue-600 mt-0.5" />
+                                <div>
+                                  <h4 className="text-base font-semibold">
+                                    <CardText lines={2}>{task.title}</CardText>
+                                  </h4>
+                                  {task.description && (
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      <CardText lines={3}>{task.description}</CardText>
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <Link href={`/tasks/${task.id}/edit`}>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">ステータス:</span>
+                                <div className="mt-1">
+                                  <StatusBadge status={task.status as StatusType} />
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">優先度:</span>
+                                <div className="mt-1">
+                                  <PriorityIndicator priority={task.priority} />
+                                </div>
+                              </div>
+                              {task.deadline && (
+                                <div>
+                                  <span className="text-muted-foreground">期限:</span>
+                                  <div className="mt-1 flex items-center gap-1">
+                                    <Calendar className="h-4 w-4" />
+                                    {new Date(task.deadline).toLocaleDateString('ja-JP')}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <InlineStatusSelect
+                          value={task.status as StatusType}
+                          onChange={(newStatus) => handleTaskStatusUpdate(task.id, newStatus)}
+                        />
                       </div>
                     </div>
-                  </Link>
+                    <div className="flex items-center gap-3 mt-2">
+                      <PriorityIndicator priority={task.priority} size="sm" showLabel={false} />
+                      {task.deadline && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(task.deadline).toLocaleDateString('ja-JP')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 ))
               )}
             </div>

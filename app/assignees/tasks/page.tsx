@@ -3,9 +3,15 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardText } from '@/components/ui/card-text'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
+import { InlineStatusSelect } from '@/components/ui/inline-status-select'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card-detail'
+import { useToast } from '@/contexts/toast-context'
+import { Button } from '@/components/ui/button'
+import { CheckSquare, Edit2 } from 'lucide-react'
 import { Calendar, Users, AlertCircle, CheckCircle2, Clock, User } from 'lucide-react'
 import Link from 'next/link'
 
@@ -46,6 +52,7 @@ export default function AssigneeTasksPage() {
   const [unassignedTasks, setUnassignedTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const { showToast } = useToast()
 
   useEffect(() => {
     fetchAssigneeTasks()
@@ -133,6 +140,34 @@ export default function AssigneeTasksPage() {
       console.error('Error fetching assignee tasks:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleTaskStatusUpdate = async (taskId: string, newStatus: StatusType) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ status: newStatus })
+        .eq('id', taskId)
+
+      if (error) throw error
+
+      // ローカルステートを更新
+      setAssigneesWithTasks(prev => prev.map(assignee => ({
+        ...assignee,
+        tasks: assignee.tasks.map(t =>
+          t.id === taskId ? { ...t, status: newStatus } : t
+        )
+      })))
+
+      setUnassignedTasks(prev => prev.map(t =>
+        t.id === taskId ? { ...t, status: newStatus } : t
+      ))
+
+      showToast('ステータスを更新しました', 'success')
+    } catch (error) {
+      console.error('ステータス更新エラー:', error)
+      showToast('ステータスの更新に失敗しました', 'error')
     }
   }
 
@@ -255,11 +290,72 @@ export default function AssigneeTasksPage() {
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
                   >
                     <div className="flex-1">
-                      <Link href={`/tasks/${task.id}`}>
-                        <h3 className="font-medium hover:text-blue-600 cursor-pointer">
-                          {task.title}
-                        </h3>
-                      </Link>
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Link href={`/tasks/${task.id}`}>
+                            <h3 className="font-medium hover:text-blue-600 cursor-pointer">
+                              <CardText lines={1}>{task.title}</CardText>
+                            </h3>
+                          </Link>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-96" align="start">
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-2">
+                                <CheckSquare className="h-5 w-5 text-blue-600 mt-0.5" />
+                                <div>
+                                  <h4 className="text-base font-semibold">
+                                    <CardText lines={2}>{task.title}</CardText>
+                                  </h4>
+                                  {task.description && (
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      <CardText lines={3}>{task.description}</CardText>
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <Link href={`/tasks/${task.id}/edit`}>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">ステータス:</span>
+                                <div className="mt-1">
+                                  <StatusBadge status={task.status} />
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">優先度:</span>
+                                <div className="mt-1">
+                                  <PriorityIndicator priority={task.priority} />
+                                </div>
+                              </div>
+                              {task.deadline && (
+                                <div>
+                                  <span className="text-muted-foreground">期限:</span>
+                                  <div className="mt-1 flex items-center gap-1">
+                                    <Calendar className="h-4 w-4" />
+                                    {new Date(task.deadline).toLocaleDateString('ja-JP')}
+                                  </div>
+                                </div>
+                              )}
+                              {task.project && (
+                                <div>
+                                  <span className="text-muted-foreground">プロジェクト:</span>
+                                  <div className="mt-1">
+                                    <Link href={`/projects/${task.project.id}`}>
+                                      <span className="text-blue-600 hover:underline">{task.project.name}</span>
+                                    </Link>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
                       <div className="flex items-center gap-3 mt-1">
                         <PriorityIndicator priority={task.priority} size="sm" />
                         {task.project && (
@@ -275,7 +371,12 @@ export default function AssigneeTasksPage() {
                         )}
                       </div>
                     </div>
-                    <StatusBadge status={task.status} size="sm" />
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <InlineStatusSelect
+                        value={task.status}
+                        onChange={(newStatus) => handleTaskStatusUpdate(task.id, newStatus)}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
