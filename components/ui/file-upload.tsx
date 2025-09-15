@@ -56,7 +56,7 @@ export function FileUpload({ projectId, taskId, attachments, onAttachmentsChange
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
         const filePath = `${projectId || taskId}/${fileName}`
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('attachments')
           .upload(filePath, file)
 
@@ -103,16 +103,15 @@ export function FileUpload({ projectId, taskId, attachments, onAttachmentsChange
 
       onAttachmentsChange([...attachments, ...newAttachments])
       showToast('ファイルをアップロードしました', 'success')
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '不明なエラー'
       console.error('アップロードエラー詳細:', {
         error,
-        message: error?.message,
-        statusCode: error?.statusCode,
-        details: error?.details
+        message: errorMessage
       })
 
       // エラーメッセージをより具体的に
-      if (error?.message) {
+      if (error instanceof Error && error.message) {
         showToast(`アップロードエラー: ${error.message}`, 'error')
       } else {
         showToast('ファイルのアップロードに失敗しました', 'error')
