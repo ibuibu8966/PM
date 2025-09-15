@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
+import { InlineStatusSelect } from '@/components/ui/inline-status-select'
+import { useToast } from '@/contexts/toast-context'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { ActionButton } from '@/components/ui/action-button'
 import { Plus, Search, Calendar, Filter, CheckSquare, FolderOpen, ArrowUp, ChevronDown, ChevronUp, User, Edit2, Clock } from 'lucide-react'
@@ -34,6 +36,7 @@ export default function TasksPage() {
   const [sortBy, setSortBy] = useState<'priority' | 'deadline'>('priority')
   const [showFilters, setShowFilters] = useState(false)
   const supabase = createClient()
+  const { showToast } = useToast()
 
   useEffect(() => {
     // URLパラメータからフィルタを設定
@@ -59,6 +62,27 @@ export default function TasksPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
+
+  const handleStatusUpdate = async (taskId: string, newStatus: StatusType) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ status: newStatus })
+        .eq('id', taskId)
+
+      if (error) throw error
+
+      // ローカルステートを更新
+      setTasks(prev => prev.map(t =>
+        t.id === taskId ? { ...t, status: newStatus } : t
+      ))
+      showToast('ステータスを更新しました', 'success')
+    } catch (error) {
+      console.error('ステータス更新エラー:', error)
+      showToast('ステータスの更新に失敗しました', 'error')
+      throw error
+    }
+  }
 
   const fetchData = async () => {
     try {
@@ -368,7 +392,10 @@ export default function TasksPage() {
                     </CardHeader>
                     <CardContent className="pt-0 px-2 pb-2">
                       <div className="flex items-center gap-1 mb-1">
-                        <StatusBadge status={task.status as StatusType} size="sm" />
+                        <InlineStatusSelect
+                          value={task.status as StatusType}
+                          onChange={(newStatus) => handleStatusUpdate(task.id, newStatus)}
+                        />
                         <PriorityIndicator priority={task.priority} size="sm" showLabel={false} />
                       </div>
                       {task.deadline && (
