@@ -56,11 +56,21 @@ export function FileUpload({ projectId, taskId, attachments, onAttachmentsChange
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
         const filePath = `${projectId || taskId}/${fileName}`
 
-        const { error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('attachments')
           .upload(filePath, file)
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          console.error('ストレージアップロードエラー:', uploadError)
+          if (uploadError.message?.includes('bucket')) {
+            showToast('ストレージバケットが存在しません。Supabaseの設定を確認してください', 'error')
+          } else if (uploadError.message?.includes('row-level')) {
+            showToast('ストレージの権限設定を確認してください', 'error')
+          } else if (uploadError.message?.includes('payload too large')) {
+            showToast('Supabaseのファイルサイズ上限を確認してください', 'error')
+          }
+          throw uploadError
+        }
 
         // URLを取得
         const { data: { publicUrl } } = supabase.storage
@@ -82,15 +92,31 @@ export function FileUpload({ projectId, taskId, attachments, onAttachmentsChange
           .select()
           .single()
 
-        if (dbError) throw dbError
+        if (dbError) {
+          console.error('データベース保存エラー:', dbError)
+          // ストレージからファイルを削除
+          await supabase.storage.from('attachments').remove([filePath])
+          throw dbError
+        }
         newAttachments.push(attachment)
       }
 
       onAttachmentsChange([...attachments, ...newAttachments])
       showToast('ファイルをアップロードしました', 'success')
-    } catch (error) {
-      console.error('アップロードエラー:', error)
-      showToast('ファイルのアップロードに失敗しました', 'error')
+    } catch (error: any) {
+      console.error('アップロードエラー詳細:', {
+        error,
+        message: error?.message,
+        statusCode: error?.statusCode,
+        details: error?.details
+      })
+
+      // エラーメッセージをより具体的に
+      if (error?.message) {
+        showToast(`アップロードエラー: ${error.message}`, 'error')
+      } else {
+        showToast('ファイルのアップロードに失敗しました', 'error')
+      }
     } finally {
       setUploading(false)
       if (fileInputRef.current) {
