@@ -32,7 +32,8 @@ export function FileUpload({ projectId, taskId, attachments, onAttachmentsChange
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B'
     if (bytes < 1048576) return Math.round(bytes / 1024) + ' KB'
-    return Math.round(bytes / 1048576) + ' MB'
+    if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB'
+    return (bytes / 1073741824).toFixed(2) + ' GB'
   }
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,9 +45,9 @@ export function FileUpload({ projectId, taskId, attachments, onAttachmentsChange
 
     try {
       for (const file of Array.from(files)) {
-        // ファイルサイズチェック（10MB制限）
-        if (file.size > 10 * 1024 * 1024) {
-          showToast(`${file.name}は10MBを超えています`, 'error')
+        // ファイルサイズチェック（100MB制限）
+        if (file.size > 100 * 1024 * 1024) {
+          showToast(`${file.name}は100MBを超えています`, 'error')
           continue
         }
 
@@ -155,7 +156,7 @@ export function FileUpload({ projectId, taskId, attachments, onAttachmentsChange
           <>
             <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
             <p className="text-sm font-medium mb-1">クリックまたはドラッグ＆ドロップ</p>
-            <p className="text-xs text-muted-foreground">最大10MBまでのファイルをアップロード</p>
+            <p className="text-xs text-muted-foreground">最大100MBまでのファイルをアップロード</p>
           </>
         )}
       </div>
