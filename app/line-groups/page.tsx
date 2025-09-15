@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { LineGroup } from '@/lib/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardText } from '@/components/ui/card-text'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card-detail'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -225,8 +226,8 @@ export default function LineGroupsPage() {
                         <div className="flex items-start gap-2">
                           <MessageSquare className={`h-4 w-4 mt-0.5 flex-shrink-0 ${lineGroup.is_active ? 'text-green-600' : 'text-gray-400'}`} />
                           <div className="flex-1">
-                            <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
-                              {lineGroup.name}
+                            <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors">
+                              <CardText lines={2}>{lineGroup.name}</CardText>
                             </CardTitle>
                             {!lineGroup.is_active && (
                               <span className="text-xs text-muted-foreground">無効</span>
@@ -295,7 +296,9 @@ export default function LineGroupsPage() {
                   <div className="flex items-start gap-2">
                     <MessageSquare className={`h-5 w-5 mt-0.5 ${lineGroup.is_active ? 'text-green-600' : 'text-gray-400'}`} />
                     <div className="flex-1">
-                      <h4 className="text-base font-semibold break-words">{lineGroup.name}</h4>
+                      <h4 className="text-base font-semibold">
+                        <CardText lines={3}>{lineGroup.name}</CardText>
+                      </h4>
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${lineGroup.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
                           {lineGroup.is_active ? '有効' : '無効'}

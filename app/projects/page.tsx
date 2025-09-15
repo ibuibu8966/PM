@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Project, Customer, LineGroup } from '@/lib/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardText } from '@/components/ui/card-text'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { StatusBadge, StatusType } from '@/components/ui/status-badge'
@@ -338,31 +339,33 @@ export default function ProjectsPage() {
             <HoverCard key={project.id}>
               <HoverCardTrigger asChild>
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                  <Link href={`/projects/${project.id}`} className="block h-full">
+                  <Link href={`/projects/${project.id}`}>
                     <CardHeader className="p-2">
                       <div className="flex items-start gap-1.5">
                         <FolderOpen className="h-3.5 w-3.5 text-purple-600 mt-0.5 flex-shrink-0" />
-                        <CardTitle className="text-sm hover:text-primary transition-colors line-clamp-1 flex-1">
-                          {project.name}
+                        <CardTitle className="text-sm hover:text-primary transition-colors flex-1">
+                          <CardText lines={1}>{project.name}</CardText>
                         </CardTitle>
                       </div>
                     </CardHeader>
-                    <CardContent className="pt-0 px-2 pb-2">
-                      <div className="flex items-center gap-1 mb-1">
-                        <InlineStatusSelect
-                          value={project.status as StatusType}
-                          onChange={(newStatus) => handleStatusUpdate(project.id, newStatus)}
-                        />
-                        <PriorityIndicator priority={project.priority} size="sm" showLabel={false} />
-                      </div>
-                      {project.deadline && (
+                  </Link>
+                  <CardContent className="pt-0 px-2 pb-2">
+                    <div className="flex items-center gap-1 mb-1" onClick={(e) => e.stopPropagation()}>
+                      <InlineStatusSelect
+                        value={project.status as StatusType}
+                        onChange={(newStatus) => handleStatusUpdate(project.id, newStatus)}
+                      />
+                      <PriorityIndicator priority={project.priority} size="sm" showLabel={false} />
+                    </div>
+                    {project.deadline && (
+                      <Link href={`/projects/${project.id}`}>
                         <div className="text-2xs text-muted-foreground flex items-center gap-0.5">
                           <Calendar className="h-2.5 w-2.5" />
                           {new Date(project.deadline).toLocaleDateString('ja-JP')}
                         </div>
-                      )}
-                    </CardContent>
-                  </Link>
+                      </Link>
+                    )}
+                  </CardContent>
                 </Card>
               </HoverCardTrigger>
               <HoverCardContent className="w-96" align="start">
@@ -371,9 +374,13 @@ export default function ProjectsPage() {
                     <div className="flex items-start gap-2">
                       <FolderOpen className="h-5 w-5 text-purple-600 mt-0.5" />
                       <div>
-                        <h4 className="text-base font-semibold">{project.name}</h4>
+                        <h4 className="text-base font-semibold">
+                          <CardText lines={2}>{project.name}</CardText>
+                        </h4>
                         {project.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            <CardText lines={3}>{project.description}</CardText>
+                          </p>
                         )}
                       </div>
                     </div>
