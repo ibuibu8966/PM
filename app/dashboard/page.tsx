@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Project, Task, UnregisteredTask } from '@/lib/types/database'
+import { generateTasksFromRecurring } from '@/lib/utils/recurring-tasks'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { PriorityIndicator } from '@/components/ui/priority-indicator'
@@ -47,7 +48,10 @@ export default function DashboardPage() {
   const supabase = createClient()
 
   useEffect(() => {
-    fetchData()
+    // 繰り返しタスクから今日のタスクを生成
+    generateTasksFromRecurring().then(() => {
+      fetchData()
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

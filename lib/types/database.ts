@@ -8,6 +8,7 @@ export type Customer = {
 export type LineGroup = {
   id: string
   name: string
+  is_active: boolean
   created_at: string
   updated_at: string
 }
@@ -139,4 +140,28 @@ export type NotificationSettings = {
   push_notifications: boolean
   created_at: string
   updated_at: string
+}
+
+export type RecurringTask = {
+  id: string
+  title: string
+  description?: string
+  project_id?: string
+  priority: number
+  recurrence_type: 'daily' | 'weekly' | 'monthly'
+  recurrence_interval: number
+  week_days?: number[]
+  month_day?: number
+  is_active: boolean
+  last_generated_at?: string
+  next_generation_at?: string
+  created_at: string
+  updated_at: string
+}
+
+export type GeneratedTask = {
+  id: string
+  recurring_task_id: string
+  task_id: string
+  generated_at: string
 }

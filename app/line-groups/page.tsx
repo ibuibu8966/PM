@@ -8,13 +8,14 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Search, Edit2, Trash2, X, MessageSquare, Copy, Check } from 'lucide-react'
+import { Plus, Search, Edit2, Trash2, X, MessageSquare, Copy, Check, ToggleLeft, ToggleRight } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LineGroupsPage() {
   const [lineGroups, setLineGroups] = useState<LineGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
@@ -35,7 +36,12 @@ export default function LineGroupsPage() {
         .order('name')
 
       if (error) throw error
-      setLineGroups(data || [])
+      // is_activeが未定義の場合はtrueに設定
+      const groupsWithStatus: LineGroup[] = (data || []).map((group: LineGroup) => ({
+        ...group,
+        is_active: group.is_active !== undefined ? group.is_active : true
+      }))
+      setLineGroups(groupsWithStatus)
     } catch (error) {
       console.error('データ取得エラー:', error)
     } finally {
@@ -49,12 +55,12 @@ export default function LineGroupsPage() {
     try {
       const { data, error } = await supabase
         .from('line_groups')
-        .insert({ name: newGroupName.trim() })
+        .insert({ name: newGroupName.trim(), is_active: true })
         .select()
         .single()
 
       if (error) throw error
-      
+
       setLineGroups([...lineGroups, data])
       setNewGroupName('')
       setIsAddDialogOpen(false)
@@ -115,9 +121,33 @@ export default function LineGroupsPage() {
     }
   }
 
-  const filteredLineGroups = lineGroups.filter(lineGroup =>
-    lineGroup.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const handleToggleStatus = async (lineGroup: LineGroup) => {
+    try {
+      const newStatus = !lineGroup.is_active
+      const { error } = await supabase
+        .from('line_groups')
+        .update({ is_active: newStatus })
+        .eq('id', lineGroup.id)
+
+      if (error) throw error
+
+      setLineGroups(lineGroups.map(lg =>
+        lg.id === lineGroup.id ? { ...lg, is_active: newStatus } : lg
+      ))
+    } catch (error) {
+      console.error('ステータス更新エラー:', error)
+      alert('ステータスの更新に失敗しました')
+    }
+  }
+
+  const filteredLineGroups = lineGroups.filter(lineGroup => {
+    const matchesSearch = lineGroup.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && lineGroup.is_active) ||
+      (statusFilter === 'inactive' && !lineGroup.is_active)
+    return matchesSearch && matchesStatus
+  })
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">読み込み中...</div>
@@ -136,9 +166,9 @@ export default function LineGroupsPage() {
         </Button>
       </div>
 
-      {/* 検索バー */}
+      {/* 検索バーとフィルター */}
       <Card className="mb-3">
-        <CardContent className="pt-3">
+        <CardContent className="pt-3 space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -147,6 +177,29 @@ export default function LineGroupsPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setStatusFilter('all')}
+              variant={statusFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+            >
+              すべて
+            </Button>
+            <Button
+              onClick={() => setStatusFilter('active')}
+              variant={statusFilter === 'active' ? 'default' : 'outline'}
+              size="sm"
+            >
+              有効
+            </Button>
+            <Button
+              onClick={() => setStatusFilter('inactive')}
+              variant={statusFilter === 'inactive' ? 'default' : 'outline'}
+              size="sm"
+            >
+              無効
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -165,18 +218,36 @@ export default function LineGroupsPage() {
           filteredLineGroups.map((lineGroup) => (
             <HoverCard key={lineGroup.id}>
               <HoverCardTrigger asChild>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Card className={`hover:shadow-lg transition-shadow cursor-pointer ${!lineGroup.is_active ? 'opacity-60' : ''}`}>
                   <CardHeader className="p-2">
                     <div className="flex justify-between items-start">
                       <Link href={`/line-groups/${lineGroup.id}`} className="flex-1">
                         <div className="flex items-start gap-2">
-                          <MessageSquare className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
-                            {lineGroup.name}
-                          </CardTitle>
+                          <MessageSquare className={`h-4 w-4 mt-0.5 flex-shrink-0 ${lineGroup.is_active ? 'text-green-600' : 'text-gray-400'}`} />
+                          <div className="flex-1">
+                            <CardTitle className="text-base hover:text-primary cursor-pointer transition-colors line-clamp-2">
+                              {lineGroup.name}
+                            </CardTitle>
+                            {!lineGroup.is_active && (
+                              <span className="text-xs text-muted-foreground">無効</span>
+                            )}
+                          </div>
                         </div>
                       </Link>
                       <div className="flex gap-1 ml-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => handleToggleStatus(lineGroup)}
+                          title={lineGroup.is_active ? '無効にする' : '有効にする'}
+                        >
+                          {lineGroup.is_active ? (
+                            <ToggleRight className="h-3 w-3 text-green-600" />
+                          ) : (
+                            <ToggleLeft className="h-3 w-3 text-gray-400" />
+                          )}
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -222,9 +293,14 @@ export default function LineGroupsPage() {
               <HoverCardContent className="w-80" align="start">
                 <div className="space-y-3">
                   <div className="flex items-start gap-2">
-                    <MessageSquare className="h-5 w-5 text-green-600 mt-0.5" />
+                    <MessageSquare className={`h-5 w-5 mt-0.5 ${lineGroup.is_active ? 'text-green-600' : 'text-gray-400'}`} />
                     <div className="flex-1">
                       <h4 className="text-base font-semibold break-words">{lineGroup.name}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${lineGroup.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                          {lineGroup.is_active ? '有効' : '無効'}
+                        </span>
+                      </div>
                       <p className="text-sm text-muted-foreground mt-2">
                         作成日: {new Date(lineGroup.created_at).toLocaleDateString('ja-JP')}
                       </p>
