@@ -379,122 +379,122 @@ export default function TasksPage() {
           </Card>
         ) : (
           filteredTasks.map((task) => (
-            <HoverCard key={task.id}>
-              <HoverCardTrigger asChild>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                  <Link href={`/tasks/${task.id}`}>
-                    <CardHeader className="p-2">
-                      <div className="flex items-start gap-1.5">
-                        <CheckSquare className="h-3.5 w-3.5 text-blue-600 mt-0.5 flex-shrink-0" />
-                        <CardTitle className="text-sm hover:text-primary transition-colors flex-1">
+            <Card key={task.id} className="hover:shadow-lg transition-shadow h-full">
+              <CardHeader className="p-2">
+                <div className="flex items-start gap-1.5">
+                  <CheckSquare className="h-3.5 w-3.5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <Link href={`/tasks/${task.id}`} className="flex-1">
+                        <CardTitle className="text-sm hover:text-primary transition-colors cursor-pointer">
                           <CardText lines={1}>{task.title}</CardText>
                         </CardTitle>
-                      </div>
-                    </CardHeader>
-                  </Link>
-                  <CardContent className="pt-0 px-2 pb-2">
-                    <div className="flex items-center gap-1 mb-1" onClick={(e) => e.stopPropagation()}>
-                      <InlineStatusSelect
-                        value={task.status as StatusType}
-                        onChange={(newStatus) => handleStatusUpdate(task.id, newStatus)}
-                      />
-                      <PriorityIndicator priority={task.priority} size="sm" showLabel={false} />
-                    </div>
-                    {task.deadline && (
-                      <Link href={`/tasks/${task.id}`}>
-                        <div className="text-2xs text-muted-foreground flex items-center gap-0.5">
-                          <Calendar className="h-2.5 w-2.5" />
-                          {new Date(task.deadline).toLocaleDateString('ja-JP')}
-                        </div>
                       </Link>
-                    )}
-                  </CardContent>
-                </Card>
-              </HoverCardTrigger>
-              <HoverCardContent className="w-96" align="start">
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-2">
-                      <CheckSquare className="h-5 w-5 text-blue-600 mt-0.5" />
-                      <div>
-                        <h4 className="text-base font-semibold">
-                          <CardText lines={2}>{task.title}</CardText>
-                        </h4>
-                        {task.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            <CardText lines={3}>{task.description}</CardText>
-                          </p>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-96" align="start">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-2">
+                            <CheckSquare className="h-5 w-5 text-blue-600 mt-0.5" />
+                            <div>
+                              <h4 className="text-base font-semibold">
+                                <CardText lines={2}>{task.title}</CardText>
+                              </h4>
+                              {task.description && (
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  <CardText lines={3}>{task.description}</CardText>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <Link href={`/tasks/${task.id}/edit`}>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">ステータス:</span>
+                            <div className="mt-1">
+                              <StatusBadge status={task.status as StatusType} />
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">優先度:</span>
+                            <div className="mt-1">
+                              <PriorityIndicator priority={task.priority} />
+                            </div>
+                          </div>
+                          {task.deadline && (
+                            <div>
+                              <span className="text-muted-foreground">期限:</span>
+                              <div className="mt-1 flex items-center gap-1">
+                                <Calendar className="h-4 w-4" />
+                                {new Date(task.deadline).toLocaleDateString('ja-JP')}
+                              </div>
+                            </div>
+                          )}
+                          <div>
+                            <span className="text-muted-foreground">作成日:</span>
+                            <div className="mt-1 flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {new Date(task.created_at).toLocaleDateString('ja-JP')}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 関連プロジェクト */}
+                        {projects[task.project_id] && (
+                          <div>
+                            <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
+                              <FolderOpen className="h-4 w-4 text-purple-600" />
+                              関連プロジェクト
+                            </h5>
+                            <Link href={`/projects/${task.project_id}`}>
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded text-xs transition-colors">
+                                {projects[task.project_id].name}
+                              </span>
+                            </Link>
+                          </div>
+                        )}
+
+                        {/* 担当者 */}
+                        {task.assignee && (
+                          <div>
+                            <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
+                              <User className="h-4 w-4 text-orange-600" />
+                              担当者
+                            </h5>
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-700 rounded text-xs">
+                              {task.assignee.name}
+                            </span>
+                          </div>
                         )}
                       </div>
-                    </div>
-                    <Link href={`/tasks/${task.id}/edit`}>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">ステータス:</span>
-                      <div className="mt-1">
-                        <StatusBadge status={task.status as StatusType} />
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">優先度:</span>
-                      <div className="mt-1">
-                        <PriorityIndicator priority={task.priority} />
-                      </div>
-                    </div>
-                    {task.deadline && (
-                      <div>
-                        <span className="text-muted-foreground">期限:</span>
-                        <div className="mt-1 flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(task.deadline).toLocaleDateString('ja-JP')}
-                        </div>
-                      </div>
-                    )}
-                    <div>
-                      <span className="text-muted-foreground">作成日:</span>
-                      <div className="mt-1 flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {new Date(task.created_at).toLocaleDateString('ja-JP')}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 関連プロジェクト */}
-                  {projects[task.project_id] && (
-                    <div>
-                      <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
-                        <FolderOpen className="h-4 w-4 text-purple-600" />
-                        関連プロジェクト
-                      </h5>
-                      <Link href={`/projects/${task.project_id}`}>
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded text-xs transition-colors">
-                          {projects[task.project_id].name}
-                        </span>
-                      </Link>
-                    </div>
-                  )}
-
-                  {/* 担当者 */}
-                  {task.assignee && (
-                    <div>
-                      <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
-                        <User className="h-4 w-4 text-green-600" />
-                        担当者
-                      </h5>
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded text-xs">
-                        {task.assignee.name}
-                      </span>
-                    </div>
-                  )}
+                    </HoverCardContent>
+                  </HoverCard>
                 </div>
-              </HoverCardContent>
-            </HoverCard>
+              </CardHeader>
+              <CardContent className="pt-0 px-2 pb-2">
+                <div className="flex items-center gap-1 mb-1" onClick={(e) => e.stopPropagation()}>
+                  <InlineStatusSelect
+                    value={task.status as StatusType}
+                    onChange={(newStatus) => handleStatusUpdate(task.id, newStatus)}
+                  />
+                  <PriorityIndicator priority={task.priority} size="sm" showLabel={false} />
+                </div>
+                {task.deadline && (
+                  <Link href={`/tasks/${task.id}`}>
+                    <div className="text-2xs text-muted-foreground flex items-center gap-0.5">
+                      <Calendar className="h-2.5 w-2.5" />
+                      {new Date(task.deadline).toLocaleDateString('ja-JP')}
+                    </div>
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
           ))
         )}
       </div>

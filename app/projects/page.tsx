@@ -336,39 +336,19 @@ export default function ProjectsPage() {
           </Card>
         ) : (
           filteredProjects.map((project) => (
-            <HoverCard key={project.id}>
-              <HoverCardTrigger asChild>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                  <Link href={`/projects/${project.id}`}>
-                    <CardHeader className="p-2">
-                      <div className="flex items-start gap-1.5">
-                        <FolderOpen className="h-3.5 w-3.5 text-purple-600 mt-0.5 flex-shrink-0" />
-                        <CardTitle className="text-sm hover:text-primary transition-colors flex-1">
+            <Card key={project.id} className="hover:shadow-lg transition-shadow h-full">
+              <CardHeader className="p-2">
+                <div className="flex items-start gap-1.5">
+                  <FolderOpen className="h-3.5 w-3.5 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <Link href={`/projects/${project.id}`} className="flex-1">
+                        <CardTitle className="text-sm hover:text-primary transition-colors cursor-pointer">
                           <CardText lines={1}>{project.name}</CardText>
                         </CardTitle>
-                      </div>
-                    </CardHeader>
-                  </Link>
-                  <CardContent className="pt-0 px-2 pb-2">
-                    <div className="flex items-center gap-1 mb-1" onClick={(e) => e.stopPropagation()}>
-                      <InlineStatusSelect
-                        value={project.status as StatusType}
-                        onChange={(newStatus) => handleStatusUpdate(project.id, newStatus)}
-                      />
-                      <PriorityIndicator priority={project.priority} size="sm" showLabel={false} />
-                    </div>
-                    {project.deadline && (
-                      <Link href={`/projects/${project.id}`}>
-                        <div className="text-2xs text-muted-foreground flex items-center gap-0.5">
-                          <Calendar className="h-2.5 w-2.5" />
-                          {new Date(project.deadline).toLocaleDateString('ja-JP')}
-                        </div>
                       </Link>
-                    )}
-                  </CardContent>
-                </Card>
-              </HoverCardTrigger>
-              <HoverCardContent className="w-96" align="start">
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-96" align="start">
                 <div className="space-y-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-2">
@@ -459,8 +439,28 @@ export default function ProjectsPage() {
                     </div>
                   )}
                 </div>
-              </HoverCardContent>
-            </HoverCard>
+                    </HoverCardContent>
+                  </HoverCard>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0 px-2 pb-2">
+                <div className="flex items-center gap-1 mb-1" onClick={(e) => e.stopPropagation()}>
+                  <InlineStatusSelect
+                    value={project.status as StatusType}
+                    onChange={(newStatus) => handleStatusUpdate(project.id, newStatus)}
+                  />
+                  <PriorityIndicator priority={project.priority} size="sm" showLabel={false} />
+                </div>
+                {project.deadline && (
+                  <Link href={`/projects/${project.id}`}>
+                    <div className="text-2xs text-muted-foreground flex items-center gap-0.5">
+                      <Calendar className="h-2.5 w-2.5" />
+                      {new Date(project.deadline).toLocaleDateString('ja-JP')}
+                    </div>
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
           ))
         )}
       </div>
