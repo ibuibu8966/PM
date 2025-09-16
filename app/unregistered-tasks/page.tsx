@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { ActionButton } from '@/components/ui/action-button'
 import { Inbox, CheckCircle, Trash2, Calendar, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react'
 import Link from 'next/link'
@@ -51,11 +52,12 @@ export default function UnregisteredTasksPage() {
 
       setUnregisteredTasks(tasksData || [])
 
-      // プロジェクト一覧取得
+      // プロジェクト一覧取得（全件取得のためlimitを大きく設定）
       const { data: projectsData } = await supabase
         .from('projects')
         .select('*')
         .order('name')
+        .limit(1000)
 
       setProjects(projectsData || [])
 
@@ -317,21 +319,13 @@ export default function UnregisteredTasksPage() {
 
                     <div>
                       <Label htmlFor={`project-${task.id}`}>プロジェクト *</Label>
-                      <Select
+                      <SearchableSelect
+                        options={projects.map(p => ({ id: p.id, name: p.name }))}
                         value={taskForms[task.id].projectId}
-                        onValueChange={(value) => updateTaskForm(task.id, 'projectId', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="プロジェクトを選択" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {projects.map((project) => (
-                            <SelectItem key={project.id} value={project.id}>
-                              {project.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onChange={(value) => updateTaskForm(task.id, 'projectId', value)}
+                        placeholder="プロジェクトを選択"
+                        searchPlaceholder="プロジェクト名で検索..."
+                      />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
