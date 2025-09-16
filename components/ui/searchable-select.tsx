@@ -85,8 +85,8 @@ export function SearchableSelect({
       </Button>
 
       {open && (
-        <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg">
-          <div className="p-2 border-b">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900 border rounded-md shadow-lg">
+          <div className="p-2 border-b bg-gray-50 dark:bg-gray-800">
             <div className="flex items-center px-2">
               <Search className="h-4 w-4 text-muted-foreground mr-2" />
               <Input
@@ -94,7 +94,7 @@ export function SearchableSelect({
                 placeholder={searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 border-0 focus:ring-0 p-0 text-sm"
+                className="h-8 border-0 focus:ring-0 p-0 text-sm bg-transparent"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>

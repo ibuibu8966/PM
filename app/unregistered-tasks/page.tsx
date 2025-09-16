@@ -52,12 +52,11 @@ export default function UnregisteredTasksPage() {
 
       setUnregisteredTasks(tasksData || [])
 
-      // プロジェクト一覧取得（全件取得のためlimitを大きく設定）
+      // プロジェクト一覧取得（全件取得）
       const { data: projectsData } = await supabase
         .from('projects')
         .select('*')
         .order('name')
-        .limit(1000)
 
       setProjects(projectsData || [])
 
