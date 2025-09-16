@@ -70,8 +70,7 @@ export default function DashboardPage() {
           .from('projects')
           .select('*')
           .order('priority', { ascending: false })
-          .order('deadline', { ascending: true })
-          .limit(10),
+          .order('deadline', { ascending: true }),
         supabase
           .from('tasks')
           .select('*')
