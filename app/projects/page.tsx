@@ -122,6 +122,9 @@ export default function ProjectsPage() {
 
   const filteredProjects = projects
     .filter(project => {
+      // デフォルトで完了を除外
+      if (project.status === 'completed') return false
+
       const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            project.description?.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus = statusFilter === 'all' || project.status === statusFilter

@@ -16,7 +16,7 @@ export default function LineGroupsPage() {
   const [lineGroups, setLineGroups] = useState<LineGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('active')
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
