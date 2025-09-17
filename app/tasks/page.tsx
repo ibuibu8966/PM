@@ -144,8 +144,8 @@ export default function TasksPage() {
 
   const filteredTasks = tasks
     .filter(task => {
-      // デフォルトで完了を除外
-      if (task.status === 'completed') return false
+      // デフォルトで完了を除外（statusFilterが'all'でない限り）
+      if (statusFilter !== 'all' && task.status === 'completed') return false
 
       const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            task.description?.toLowerCase().includes(searchTerm.toLowerCase())
