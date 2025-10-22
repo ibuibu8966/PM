@@ -870,11 +870,11 @@ export default function DashboardPage() {
                 <CheckSquare className="h-5 md:h-6 w-5 md:w-6 text-green-600 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-xs md:text-sm text-muted-foreground">本日の完了</p>
-                  <p className="text-xs md:text-sm font-bold text-green-700">{completedTodayTasks}/{todayTasks.length}件</p>
+                  <p className="text-xs md:text-sm font-bold text-green-700">{completedTodayTasks}/{notificationTasks.length}件</p>
                 </div>
                 <div className="text-right">
                   <div className="text-base md:text-lg font-bold text-green-700">
-                    {todayTasks.length > 0 ? Math.round((completedTodayTasks / todayTasks.length) * 100) : 0}%
+                    {notificationTasks.length > 0 ? Math.round((completedTodayTasks / notificationTasks.length) * 100) : 0}%
                   </div>
                 </div>
               </div>
