@@ -321,12 +321,12 @@ export default function DashboardPage() {
 
   // 統計情報の計算
   const now = new Date()
-  const todayOverdueTasks = todayTasks.filter(task => 
+  const todayOverdueTasks = notificationTasks.filter(task =>
     task.deadline && new Date(task.deadline) < now
   ).length
-  const highPriorityTasks = todayTasks.filter(task => task.priority >= 8).length
+  const highPriorityTasks = notificationTasks.filter(task => task.priority >= 8).length
   const inProgressProjects = projects.filter(p => p.status === 'in_progress').length
-  const completedTodayTasks = todayTasks.filter(task => task.status === 'completed').length
+  const completedTodayTasks = notificationTasks.filter(task => task.status === 'completed').length
 
   return (
     <div className="container mx-auto p-2 md:p-3 max-w-7xl">
