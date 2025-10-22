@@ -379,8 +379,8 @@ export default function DashboardPage() {
           <CardContent className="p-2 md:p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] md:text-sm text-muted-foreground">本日タスク</p>
-                <p className="text-lg md:text-xl font-bold">{todayTasks.length}</p>
+                <p className="text-[10px] md:text-sm text-muted-foreground">通知タスク</p>
+                <p className="text-lg md:text-xl font-bold">{notificationTasks.length}</p>
               </div>
               <Target className="h-8 md:h-10 w-8 md:w-10 text-blue-500 opacity-60" />
             </div>
