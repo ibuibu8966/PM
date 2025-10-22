@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Calendar, AlertCircle, FolderOpen, CheckSquare, Users, MessageSquare, ArrowRight, Sparkles, Clock, TrendingUp, Target, Inbox, User, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Calendar, AlertCircle, FolderOpen, CheckSquare, Users, MessageSquare, ArrowRight, Sparkles, Clock, TrendingUp, Target, Inbox, User, ChevronDown, ChevronUp, Bell } from 'lucide-react'
 import Link from 'next/link'
 
 type Assignee = {
@@ -33,7 +33,7 @@ type AssigneeStats = {
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([])
-  const [todayTasks, setTodayTasks] = useState<Task[]>([])
+  const [notificationTasks, setNotificationTasks] = useState<Task[]>([])
   const [unregisteredTasks, setUnregisteredTasks] = useState<UnregisteredTask[]>([])
   const [assigneeStats, setAssigneeStats] = useState<AssigneeStats[]>([])
   const [assignees, setAssignees] = useState<Assignee[]>([])
@@ -62,10 +62,10 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0]
-      
-      // プロジェクト、タスク、未登録タスク、担当者を並列で取得
-      const [projectsResult, tasksResult, highPriorityTasksResult, unregisteredResult, assigneesResult, allTasksResult] = await Promise.all([
+      const now = new Date().toISOString()
+
+      // プロジェクト、通知タスク、未登録タスク、担当者を並列で取得
+      const [projectsResult, notificationTasksResult, unregisteredResult, assigneesResult, allTasksResult] = await Promise.all([
         supabase
           .from('projects')
           .select('*')
@@ -74,17 +74,10 @@ export default function DashboardPage() {
         supabase
           .from('tasks')
           .select('*')
-          .lte('deadline', today)
-          .in('status', ['not_started', 'in_progress', 'waiting_confirmation'])
-          .order('priority', { ascending: false })
-          .order('deadline', { ascending: true }),
-        supabase
-          .from('tasks')
-          .select('*')
-          .gte('priority', 8)
-          .in('status', ['not_started', 'in_progress', 'waiting_confirmation'])
-          .order('priority', { ascending: false })
-          .order('deadline', { ascending: true }),
+          .lte('notification_time', now)
+          .neq('status', 'completed')
+          .order('notification_time', { ascending: true })
+          .limit(5),
         supabase
           .from('unregistered_tasks')
           .select('*')
@@ -104,13 +97,9 @@ export default function DashboardPage() {
         console.error('プロジェクト取得エラー:', projectsResult.error)
         throw projectsResult.error
       }
-      if (tasksResult.error) {
-        console.error('タスク取得エラー:', tasksResult.error)
-        throw tasksResult.error
-      }
-      if (highPriorityTasksResult.error) {
-        console.error('高優先度タスク取得エラー:', highPriorityTasksResult.error)
-        throw highPriorityTasksResult.error
+      if (notificationTasksResult.error) {
+        console.error('通知タスク取得エラー:', notificationTasksResult.error)
+        throw notificationTasksResult.error
       }
       if (unregisteredResult.error) {
         console.error('未登録タスク取得エラー:', unregisteredResult.error)
@@ -127,27 +116,7 @@ export default function DashboardPage() {
       }
 
       setProjects(projectsResult.data || [])
-
-      // 今日のタスクと高優先度タスクを結合（重複を除く）
-      const todayTasksData = tasksResult.data || []
-      const highPriorityTasksData = highPriorityTasksResult.data || []
-      const combinedTasks = [...todayTasksData]
-      highPriorityTasksData.forEach((task: Task) => {
-        if (!combinedTasks.find(t => t.id === task.id)) {
-          combinedTasks.push(task)
-        }
-      })
-      // 優先度順、締切順でソート
-      combinedTasks.sort((a, b) => {
-        if (b.priority !== a.priority) {
-          return b.priority - a.priority
-        }
-        if (!a.deadline) return 1
-        if (!b.deadline) return -1
-        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
-      })
-
-      setTodayTasks(combinedTasks)
+      setNotificationTasks(notificationTasksResult.data || [])
       setUnregisteredTasks(unregisteredResult.data || [])
 
       // 担当者データを設定（エラーの場合は空配列）
@@ -219,7 +188,7 @@ export default function DashboardPage() {
       if (error) throw error
 
       // ローカルステートを更新
-      setTodayTasks(prev => prev.map(t =>
+      setNotificationTasks(prev => prev.map(t =>
         t.id === taskId ? { ...t, status: newStatus } : t
       ))
       showToast('ステータスを更新しました', 'success')
@@ -485,22 +454,22 @@ export default function DashboardPage() {
       )}
 
       <div className="grid gap-3 md:gap-4 md:grid-cols-2">
-        {/* 今日のタスク */}
+        {/* 通知 */}
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 p-2 md:p-3">
+          <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950 p-2 md:p-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-sm md:text-base">
-                <AlertCircle className="h-4 md:h-5 w-4 md:w-5 text-blue-600" />
-                <span className="hidden md:inline">今日のタスク</span>
-                <span className="md:hidden">タスク</span>
-                <span className="text-xs md:text-sm font-normal text-muted-foreground">({todayTasks.length})</span>
+                <Bell className="h-4 md:h-5 w-4 md:w-5 text-amber-600" />
+                <span className="hidden md:inline">通知</span>
+                <span className="md:hidden">通知</span>
+                <span className="text-xs md:text-sm font-normal text-muted-foreground">({notificationTasks.length})</span>
               </CardTitle>
-              <Link href="/tasks/new">
+              <Link href="/notifications">
                 <ActionButton
-                  icon={<Plus className="h-4 w-4" />}
-                  label="新規"
+                  icon={<ArrowRight className="h-4 w-4" />}
+                  label="すべて"
                   size="sm"
-                  tooltip="タスクを追加"
+                  tooltip="通知一覧を見る"
                   variant="default"
                 />
               </Link>
@@ -508,13 +477,13 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="pt-2 md:pt-3 px-2 md:px-3">
             <div className="space-y-3">
-              {todayTasks.length === 0 ? (
+              {notificationTasks.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckSquare className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                  <p className="text-muted-foreground">今日のタスクはありません</p>
+                  <p className="text-muted-foreground">通知はありません</p>
                 </div>
               ) : (
-                todayTasks.slice(0, 5).map((task) => {
+                notificationTasks.slice(0, 5).map((task) => {
                   const isOverdue = task.deadline && new Date(task.deadline) < now
                   return (
                     <div key={task.id} className={`group p-2 md:p-3 border rounded-lg md:rounded-xl hover:border-primary hover:bg-primary/5 transition-all duration-200 ${

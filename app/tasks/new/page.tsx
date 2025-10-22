@@ -33,6 +33,7 @@ export default function NewTaskPage() {
     priority: 5,
     deadline: '',
     assigneeId: '',
+    notificationTime: new Date().toISOString().slice(0, 16), // 初期値: 現在時刻（YYYY-MM-DDTHH:mm形式）
     isRecurring: false,
     recurrenceType: 'daily' as 'daily' | 'weekly' | 'monthly',
     recurrenceInterval: 1,
@@ -135,7 +136,8 @@ export default function NewTaskPage() {
           project_id: formData.projectId,
           priority: formData.priority,
           status: 'not_started',
-          deadline: formData.deadline || new Date().toISOString()
+          deadline: formData.deadline || new Date().toISOString(),
+          notification_time: formData.notificationTime
         }
 
         if (formData.assigneeId && formData.assigneeId !== 'none') {
@@ -155,7 +157,8 @@ export default function NewTaskPage() {
           project_id: formData.projectId,
           priority: formData.priority,
           status: 'not_started',
-          deadline: formData.deadline || null
+          deadline: formData.deadline || null,
+          notification_time: formData.notificationTime
         }
 
         if (formData.assigneeId && formData.assigneeId !== 'none') {
@@ -277,6 +280,20 @@ export default function NewTaskPage() {
                   onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="notificationTime">通知日時 *</Label>
+              <Input
+                id="notificationTime"
+                type="datetime-local"
+                value={formData.notificationTime}
+                onChange={(e) => setFormData({ ...formData, notificationTime: e.target.value })}
+                required
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                この日時になると通知一覧に表示されます
+              </p>
             </div>
           </CardContent>
         </Card>

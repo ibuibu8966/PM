@@ -38,8 +38,10 @@ export default function EditTaskPage() {
     status: 'not_started',
     priority: 5,
     deadline: '',
-    assignee_id: ''
+    assignee_id: '',
+    notification_time: ''
   })
+  const [notificationTimeError, setNotificationTimeError] = useState('')
 
   useEffect(() => {
     fetchData()
@@ -58,6 +60,12 @@ export default function EditTaskPage() {
       if (taskError) throw taskError
       
       setTask(taskData)
+
+      // notification_timeをdatetime-local形式に変換 (YYYY-MM-DDTHH:mm)
+      const notificationTimeValue = taskData.notification_time
+        ? new Date(taskData.notification_time).toISOString().slice(0, 16)
+        : ''
+
       setFormData({
         title: taskData.title,
         description: taskData.description || '',
@@ -65,8 +73,14 @@ export default function EditTaskPage() {
         status: taskData.status,
         priority: taskData.priority,
         deadline: taskData.deadline ? taskData.deadline.split('T')[0] : '',
-        assignee_id: taskData.assignee_id || 'none'
+        assignee_id: taskData.assignee_id || 'none',
+        notification_time: notificationTimeValue
       })
+
+      // 通知時刻が過去かチェック
+      if (taskData.notification_time && new Date(taskData.notification_time) < new Date()) {
+        setNotificationTimeError('通知時刻が過去のため、未来の日時に変更してください')
+      }
 
       // プロジェクト一覧取得
       const { data: projectsData, error: projectsError } = await supabase
@@ -101,9 +115,20 @@ export default function EditTaskPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.title.trim() || !formData.project_id) {
       alert('タスク名とプロジェクトは必須です')
+      return
+    }
+
+    // 通知時刻が過去かチェック
+    if (formData.notification_time && new Date(formData.notification_time) < new Date()) {
+      alert('通知時刻は未来の日時を指定してください')
+      return
+    }
+
+    if (!formData.notification_time) {
+      alert('通知日時は必須です')
       return
     }
 
@@ -118,12 +143,13 @@ export default function EditTaskPage() {
           status: formData.status,
           priority: formData.priority,
           deadline: formData.deadline || null,
-          assignee_id: formData.assignee_id === 'none' || !formData.assignee_id ? null : formData.assignee_id
+          assignee_id: formData.assignee_id === 'none' || !formData.assignee_id ? null : formData.assignee_id,
+          notification_time: formData.notification_time
         })
         .eq('id', taskId)
 
       if (error) throw error
-      
+
       router.push(`/tasks/${taskId}`)
     } catch (error) {
       console.error('更新エラー:', error)
@@ -277,6 +303,32 @@ export default function EditTaskPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="notification_time">通知日時 *</Label>
+              <Input
+                id="notification_time"
+                type="datetime-local"
+                value={formData.notification_time}
+                onChange={(e) => {
+                  setFormData({ ...formData, notification_time: e.target.value })
+                  // 過去チェックをクリア
+                  if (new Date(e.target.value) >= new Date()) {
+                    setNotificationTimeError('')
+                  } else {
+                    setNotificationTimeError('通知時刻が過去のため、未来の日時に変更してください')
+                  }
+                }}
+                required
+                className={notificationTimeError ? 'border-red-500' : ''}
+              />
+              {notificationTimeError && (
+                <p className="text-sm text-red-500 mt-1">{notificationTimeError}</p>
+              )}
+              <p className="text-sm text-muted-foreground mt-1">
+                この日時になると通知一覧に表示されます
+              </p>
             </div>
 
             <div className="flex gap-4">

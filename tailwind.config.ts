@@ -57,6 +57,25 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        'notification-pulse': {
+          '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+          '50%': { transform: 'scale(1.1)', opacity: '0.8' },
+        },
+        'notification-badge': {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.2)' },
+        },
+        'notification-background': {
+          '0%, 100%': { backgroundColor: 'transparent' },
+          '50%': { backgroundColor: 'rgba(239, 68, 68, 0.1)' },
+        },
+      },
+      animation: {
+        'notification-pulse': 'notification-pulse 2s ease-in-out infinite',
+        'notification-badge': 'notification-badge 2s ease-in-out infinite',
+        'notification-background': 'notification-background 2s ease-in-out infinite',
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

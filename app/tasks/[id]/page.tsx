@@ -15,9 +15,17 @@ import { PriorityIndicator } from '@/components/ui/priority-indicator'
 import { InlineStatusSelect } from '@/components/ui/inline-status-select'
 import { InlinePrioritySelect } from '@/components/ui/inline-priority-select'
 import { ActionButton } from '@/components/ui/action-button'
-import { 
-  ArrowLeft, CheckSquare, FolderOpen, Calendar, Clock, StickyNote, 
-  Plus, Edit2, Trash2, Save, X, ChevronDown, ChevronUp, Lightbulb, ChevronRight
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  ArrowLeft, CheckSquare, FolderOpen, Calendar, Clock, StickyNote,
+  Plus, Edit2, Trash2, Save, X, ChevronDown, ChevronUp, Lightbulb, ChevronRight, Bell
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -45,6 +53,9 @@ export default function TaskDetailPage() {
     content: '',
     reason: ''
   })
+  const [showRescheduleDialog, setShowRescheduleDialog] = useState(false)
+  const [newNotificationTime, setNewNotificationTime] = useState('')
+  const [rescheduleProcessing, setRescheduleProcessing] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -127,6 +138,42 @@ export default function TaskDetailPage() {
       console.error('優先度更新エラー:', error)
     } else {
       setTask({ ...task, priority: newPriority })
+    }
+  }
+
+  const handleRescheduleNotification = () => {
+    // 初期値は現在時刻
+    setNewNotificationTime(new Date().toISOString().slice(0, 16))
+    setShowRescheduleDialog(true)
+  }
+
+  const handleRescheduleSubmit = async () => {
+    if (!task || !newNotificationTime) return
+
+    // 未来の日時かチェック
+    if (new Date(newNotificationTime) <= new Date()) {
+      alert('未来の日時を指定してください')
+      return
+    }
+
+    setRescheduleProcessing(true)
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ notification_time: newNotificationTime })
+        .eq('id', task.id)
+
+      if (error) throw error
+
+      setTask({ ...task, notification_time: newNotificationTime })
+      setShowRescheduleDialog(false)
+      setNewNotificationTime('')
+      alert('通知日時を更新しました')
+    } catch (error) {
+      console.error('再通知設定エラー:', error)
+      alert('再通知の設定に失敗しました')
+    } finally {
+      setRescheduleProcessing(false)
     }
   }
 
@@ -425,6 +472,29 @@ export default function TaskDetailPage() {
                   <p className="text-sm font-medium">
                     {new Date(task.created_at).toLocaleDateString('ja-JP')}
                   </p>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-muted-foreground mb-2 flex items-center gap-1">
+                  <Bell className="h-3 w-3" />
+                  通知日時
+                </Label>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">
+                    {task.notification_time
+                      ? new Date(task.notification_time).toLocaleString('ja-JP')
+                      : '未設定'}
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRescheduleNotification}
+                    className="h-7"
+                  >
+                    <Clock className="h-3 w-3 mr-1" />
+                    再通知設定
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -799,6 +869,59 @@ export default function TaskDetailPage() {
           )}
         </div>
       </div>
+
+      {/* 再通知設定ダイアログ */}
+      <Dialog open={showRescheduleDialog} onOpenChange={setShowRescheduleDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>再通知設定</DialogTitle>
+            <DialogDescription>
+              次の通知日時を設定してください
+            </DialogDescription>
+          </DialogHeader>
+
+          {task && (
+            <div className="mb-4">
+              <p className="font-medium mb-2">{task.title}</p>
+              <p className="text-sm text-muted-foreground">
+                現在の通知時刻: {task.notification_time
+                  ? new Date(task.notification_time).toLocaleString('ja-JP')
+                  : '未設定'}
+              </p>
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="newNotificationTime">新しい通知日時 *</Label>
+            <Input
+              id="newNotificationTime"
+              type="datetime-local"
+              value={newNotificationTime}
+              onChange={(e) => setNewNotificationTime(e.target.value)}
+              required
+            />
+            <p className="text-sm text-muted-foreground mt-1">
+              未来の日時を指定してください
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowRescheduleDialog(false)}
+              disabled={rescheduleProcessing}
+            >
+              キャンセル
+            </Button>
+            <Button
+              onClick={handleRescheduleSubmit}
+              disabled={rescheduleProcessing || !newNotificationTime}
+            >
+              {rescheduleProcessing ? '設定中...' : '設定'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
