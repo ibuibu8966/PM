@@ -144,6 +144,11 @@ export default function UnregisteredTasksPage() {
     }
 
     try {
+      // デフォルトの通知時刻を設定（明日の9時）
+      const tomorrow9am = new Date()
+      tomorrow9am.setDate(tomorrow9am.getDate() + 1)
+      tomorrow9am.setHours(9, 0, 0, 0)
+
       // タスクを作成
       const { error: taskError } = await supabase
         .from('tasks')
@@ -153,6 +158,7 @@ export default function UnregisteredTasksPage() {
           project_id: form.projectId,
           priority: form.priority,
           deadline: form.deadline || null,
+          notification_time: tomorrow9am.toISOString(),
           status: 'not_started',
           assignee_id: form.assigneeId === 'none' || !form.assigneeId ? null : form.assigneeId
         })
