@@ -133,17 +133,30 @@ export default function UnregisteredTasksPage() {
   const assignTask = async (taskId: string) => {
     const form = taskForms[taskId]
 
-    if (!form.projectId) {
-      alert('プロジェクトを選択してください')
-      return
-    }
-
     if (!form.title) {
       alert('タスク名を入力してください')
       return
     }
 
     try {
+      // プロジェクトが未選択の場合、「野田タスク即フリ」プロジェクトを取得
+      let projectId = form.projectId
+
+      if (!projectId) {
+        const { data: defaultProject, error: projectError } = await supabase
+          .from('projects')
+          .select('id')
+          .eq('name', '野田タスク即フリ')
+          .single()
+
+        if (projectError || !defaultProject) {
+          alert('プロジェクトを選択してください（デフォルトプロジェクト「野田タスク即フリ」が見つかりません）')
+          return
+        }
+
+        projectId = defaultProject.id
+      }
+
       // デフォルトの通知時刻を設定（明日の9時）
       const tomorrow9am = new Date()
       tomorrow9am.setDate(tomorrow9am.getDate() + 1)
@@ -155,7 +168,7 @@ export default function UnregisteredTasksPage() {
         .insert({
           title: form.title,
           description: form.description || null,
-          project_id: form.projectId,
+          project_id: projectId,
           priority: form.priority,
           deadline: form.deadline || null,
           notification_time: tomorrow9am.toISOString(),
@@ -380,7 +393,7 @@ export default function UnregisteredTasksPage() {
                     <div className="flex justify-end gap-2 pt-4">
                       <Button
                         onClick={() => assignTask(task.id)}
-                        disabled={!taskForms[task.id].projectId || !taskForms[task.id].title}
+                        disabled={!taskForms[task.id].title}
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
                         タスクとして登録
