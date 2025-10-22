@@ -32,6 +32,7 @@ export type Task = {
   priority: number
   status: 'not_started' | 'waiting_confirmation' | 'in_progress' | 'completed'
   deadline?: string
+  notification_time: string
   assignee_id?: string
   created_at: string
   updated_at: string
