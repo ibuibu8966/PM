@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Calendar, AlertCircle, FolderOpen, CheckSquare, Users, MessageSquare, ArrowRight, Sparkles, Clock, TrendingUp, Target, Inbox, User, ChevronDown, ChevronUp, Bell } from 'lucide-react'
+import { Plus, Calendar, FolderOpen, CheckSquare, Users, MessageSquare, ArrowRight, Sparkles, Clock, TrendingUp, Target, Inbox, User, ChevronDown, ChevronUp, Bell } from 'lucide-react'
 import Link from 'next/link'
 
 type Assignee = {
